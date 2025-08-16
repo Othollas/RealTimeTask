@@ -1,38 +1,26 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
+
+import { connectDB } from "./db.js";
+import categoriesRouter from "./routes/categories.js";
 
 const app = express();
-const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 
+app.use("api/categories", categoriesRouter);
 
-//Route GET simple 
-app.get('/', (req, res) => {
-    res.send('Bonjour tous le monde !');
-});
+const PORT = 3001;
 
+app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
 
-app.get('/bonjour', (req, res) => {
-    res.send('Hello mina')
-});
-
-// Route GET avec Récuperation de donnée
-
-app.get('/utilisateur/:nom', (req, res) => {
-    const nomUtilisateur = req.params.nom;
-    res.send(`Bonjour ${nomUtilisateur}`)
-})
-
-
-
-// Route TEST POST 
-app.post('/contact', (req, res) =>{
-    const {nom, email} = req.body;
-    console.log(`Nouveau contact : ${nom}, (${email})`);
-    res.json({ status: `Message reçu !` });
+connectDB().then(()=>{
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
 });
 
 // connexion MongoDB
@@ -43,6 +31,6 @@ app.post('/contact', (req, res) =>{
 // .catch(err => console.error(err));
 
 //lancement du serveur HTTP
-const server = app.listen(PORT, ()=>{
-    console.log(`Serveur HTTP sur http:localhost:${PORT}`)
-})
+// const server = app.listen(PORT, ()=>{
+//     console.log(`Serveur HTTP sur http:localhost:${PORT}`)
+// })
