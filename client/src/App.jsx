@@ -21,6 +21,14 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
+
+        <form action="http://localhost:3001/contact" method="post">
+    <input type="text" name='name' id='name'/>
+    <input type="text" name='email' id='email'/>
+          <button type='submit'>
+            envoyer
+          </button>
+        </form>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
