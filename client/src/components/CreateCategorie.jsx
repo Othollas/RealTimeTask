@@ -36,6 +36,9 @@ const AddCategory = ({ fetchCategorie }) => {
         }
     };
 
+
+
+    
     return (
         <div>
             {!isAdding ? (
