@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CategoryList from "./CategoryList";
+import Button from "react-bootstrap/esm/Button";
 
 const AddCategory = ({ fetchCategorie }) => {
     const [isAdding, setIsAdding] = useState(false);
@@ -10,7 +11,6 @@ const AddCategory = ({ fetchCategorie }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-
 
         try {
             //exemple de rêquete POST avec fetch
@@ -36,40 +36,71 @@ const AddCategory = ({ fetchCategorie }) => {
         }
     };
 
+    const handleReset =  () =>{
+        setName('');
+        setDescription('');
+        setIsAdding(false);
+    }
 
 
-    
     return (
-        <div>
+        <div className="position-absolute">
             {!isAdding ? (
+
                 <button
                     onClick={() => setIsAdding(true)}
-                    className="add-button">
+                    className="btn btn-warning position-fixed bottom-0 start-0 m-4 shadow">
                     <span>+</span>
                 </button>
             ) : (
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label>Nom : </label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                    </div>
 
-                    <div>
-                        <label>Description : </label>
-                        <input
-                            type="text"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                    </div>
-                    <button type="submit" disabled={isLoading}>
-                        {isLoading ? 'Envoi en cours... ' : 'Envoyer'}
-                    </button>
-                </form>
+                <>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="position-fixed 
+                        bottom-0 
+                        start-0  
+                        text-start 
+                        form m-3 
+                        border 
+                        text-bg-light 
+                        p-3 
+                        shadow 
+                        d-flex 
+                        align-items-center
+                        rounded-pill"
+                    >
+                        <div className="form-floating me-5">
+                            <input
+                                type="text"
+                                value={name}
+                                className="form-control-plaintext rounded-pill shadow "
+                                for="name"
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            <label id="name">Nom : </label>
+                        </div>
+
+                        <div className="form-floating me-5">
+
+                            <input
+                                type="text"
+                                value={description}
+                                for="description"
+                                className="form-control-plaintext p-2 rounded-pill shadow"
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                            <label id="description">Description : </label>
+                        </div>
+                        <button className="btn btn-outline-success" type="submit" disabled={isLoading}>
+                            {isLoading ? 'Envoi en cours... ' : 'Envoyer'}
+                        </button>
+                        <button className="btn-close ms-4 p-4" type="submit" onClick={handleReset}>
+
+                        </button>
+                    </form>
+                </>
+
             )}
         </div>
     );

@@ -10,6 +10,7 @@ export default function CategoryList({ categories, fetchCategorie }) {
     }, [])
 
 
+
     return (
         <div className="text-center">
             <h2 className="m-5">Catégories</h2>
