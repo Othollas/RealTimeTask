@@ -1,19 +1,42 @@
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import img from "/vite.svg?url"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 
 
 const CardCategorie = ({ categorie, fetchCategorie }) => {
-
+    const [count, setCount] = useState(0);
     const [isModify, setIsModify] = useState(false);
     const [name, setName] = useState(categorie.name);
-    const [description, setDescription] = useState(categorie.description);
+    const [description, setDescription] = useState(categorie.description || "");
     const created_at = categorie.created_at;
 
+    useEffect(()=>{
+            getTaskCount(categorie._id)
+        }, [])
 
-    const handleDelete = async () => {
+    const getTaskCount = async (id) => {
+       
+        try {
+            const response = await fetch(`http://localhost:3001/api/tasks/${id}`);
+            const data = await response.json();
+            setCount(data.length)
+        
+        } catch (error) {
+            console.error(error)
+        }finally{
+            fetchCategorie()
+        }
+
+
+        
+    }
+
+    const handleDelete = async (e) => {
+        e.preventDefault();
+
         try {
             const response = await fetch(`http://localhost:3001/api/categories/${categorie._id}`, {
                 method: "DELETE"
@@ -35,8 +58,8 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
         }
     };
 
-    const handleModify = async () => {
-
+    const handleModify = async (e) => {
+        e.preventDefault();
 
         try {
             const response = await fetch(`http://localhost:3001/api/categories/${categorie._id}`, {
@@ -61,16 +84,22 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
         }
     }
 
+    
     return (
-        <Card style={{ width: '15rem' }}>
-            <Card.Img className='mt-2' variant="top" src={img} />
+        <Card  className="shadow" style={{ width: '15rem' }}>
+            <Link to={`/categorie/${categorie._id}`}><Card.Img className='mt-2' variant="top" src={img} /></Link>
+            
             <Card.Body className='text-center' >
-                <Card.Title>{categorie.name}</Card.Title>
-                <Card.Text>{categorie.description}</Card.Text>
-                <div className='text-center'  >
+                <Link to={`/categorie/${categorie._id}`}><Card.Title>{categorie.name}</Card.Title></Link>
+                  <Card.Text>{categorie.description}</Card.Text>
+                  <Card.Text>{count === 1 || count === 0 ? `Vous avez ${count} tache` : `Vous avez ${count} taches`}</Card.Text>
+                <div className='text-center'>
                     {!isModify ? (
+                        <>
                         <Button as='a' className='m-1' variant="primary" action={null} onClick={() => setIsModify(true)}>Modifier
                         </Button>
+                        </>
+                        
                     ) : (
                         <form onSubmit={handleModify}>
                             <div>
@@ -94,12 +123,10 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                             {/* <button type="submit" disabled={isLoading}>
                             {isLoading ? 'Envoi en cours... ' : 'Envoyer'}
                         </button> */}
-                            <Button type="submit" variant='primary'>
+                            <Button className='m-2' type="submit" variant='primary'>
                                 Envoyer
                             </Button>
-                            <Button type="submit" variant='danger' onClick={()=>setIsModify(false)}>
-                                retour
-                            </Button>
+                            <Button className='m-2 ' type="submit" variant='close' onClick={()=>setIsModify(false)}></Button>
                         </form>
                     )}
                 </div>
