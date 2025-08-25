@@ -1,22 +1,22 @@
 import express from "express";
 import { getDB } from "../db.js";
 import { ObjectId } from "mongodb";
+import Category from "../schemas/categorieSchema.js";
 
 const router = express.Router();
-;
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res) => { 
     try {
-        const categories = await getDB()
-            .collection('categories')
-            .find()
-            .toArray();
+        const categories = await Category.find();
+        
         res.json(categories);
     } catch (err) {
-        console.error(err)
+        console.error(err);
         res.status(500).json({ error: "Erreur Serveur" });
     }
 });
+
+
 
 router.post("/", async (req, res) => {
     try {
@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
             updated_at: new Date()
         };
 
-        const result = await getDB().collection('categories').insertOne(newCategorie);
+        const result = await Category.insertOne(newCategorie);
 
 
         //Response avec succes
@@ -56,9 +56,7 @@ router.delete("/:id", async (req, res) => {
             return res.status(400).json({ message: 'ID invalide' });
         }
 
-        const result = await getDB()
-            .collection('categories')
-            .deleteOne({ _id: new ObjectId(req.params.id) });
+        const result = await Category.deleteOne({ _id: new ObjectId(req.params.id) });
 
         console.log('Résultat suppression:', result);
         // Vérification avec deletedCount
@@ -90,8 +88,8 @@ router.put("/:id", async (req, res) => {
             updated_at: updatedTime
         };
 
-        console.log(updatedCategorie)
-        const result = await getDB().collection('categories').replaceOne({ _id: new ObjectId(req.params.id) }, updatedCategorie);
+        
+        const result = await Category.replaceOne({ _id: new ObjectId(req.params.id) }, updatedCategorie);
 
         if (!result.acknowledged) {
             return res.status(404).json({ message: 'Catégorie non trouvée' });

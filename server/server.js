@@ -3,11 +3,13 @@ import cors from "cors";
 
 import { connectDB } from "./db.js";
 import categoriesRouter from "./routes/categories.js";
+import tasksRouter from "./routes/tasks.js"
+
 
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173",  // ton front
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     allowedHeaders: ["Content-Type"]
 }));
@@ -15,7 +17,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
 
-app.use("/api/categories", categoriesRouter);
+app.use("/api/categories/", categoriesRouter);
+app.use("/api/tasks", tasksRouter);
+
 
 const PORT = 3001;
 
