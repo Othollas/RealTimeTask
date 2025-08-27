@@ -1,5 +1,4 @@
 import express from "express";
-import { getDB } from "../db.js";
 import { ObjectId } from "mongodb";
 import Category from "../schemas/categorieSchema.js";
 
