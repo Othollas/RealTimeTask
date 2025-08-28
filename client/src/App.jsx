@@ -6,6 +6,7 @@ import CategoriesHome from './pages/CategoriesHome'
 import CategoriePage from './pages/CategoriePage'
 import NotFound from './pages/NotFound'
 import Login from './components/Login'
+import Register from './components/Register'
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<CategoriesHome />} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/register" element={<Register/>} />
         <Route path="/categorie/:id" element={<CategoriePage />} />
         <Route path="*" element={<NotFound />} />
 
