@@ -2,7 +2,6 @@ import { useState } from "react";
 import { login } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
-
 const Login = () => {
     const navigate = useNavigate();
     const [error, setError] = useState(false);
@@ -26,12 +25,10 @@ const Login = () => {
 
                 if (result.find) { navigate("/", { replace: true }) }
 
-
             } catch (error) {
                 console.error("Erreur :", error.message);
             }
         }
-
     }
 
     return (

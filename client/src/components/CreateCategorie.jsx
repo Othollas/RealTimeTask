@@ -18,6 +18,7 @@ const AddCategory = ({ fetchCategorie }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, description }),
+                credentials: "include",
             });
 
             if (response.ok) {
@@ -75,7 +76,7 @@ const AddCategory = ({ fetchCategorie }) => {
                                 type="text"
                                 value={name}
                                 className="form-control-plaintext rounded-pill shadow "
-                                for="name"
+                                htmlFor="name"
                                 onChange={(e) => setName(e.target.value)}
                             />
                             <label id="name">Nom : </label>
@@ -86,7 +87,7 @@ const AddCategory = ({ fetchCategorie }) => {
                             <input
                                 type="text"
                                 value={description}
-                                for="description"
+                                htmlFor="description"
                                 className="form-control-plaintext p-2 rounded-pill shadow"
                                 onChange={(e) => setDescription(e.target.value)}
                             />
@@ -105,7 +106,5 @@ const AddCategory = ({ fetchCategorie }) => {
         </div>
     );
 };
-
-
 
 export default AddCategory;
