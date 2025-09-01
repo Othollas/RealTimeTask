@@ -1,22 +1,26 @@
-
 import { useState } from 'react';
 import CategoryList from '../components/CategoryList'
 import AddCategory from '../components/CreateCategorie'
-
-
 
 const CategoriesHome = () => {
 
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
+  const [name, setName] = useState('');
 
   const fetchCategorie = async () => {
-    fetch("http://localhost:3001/api/categories")
+    fetch("http://localhost:3001/api/categories", {
+      method: "GET",
+      credentials: "include"
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Erreur de chargement");
         return res.json();
       })
-      .then((data) => setCategories(data))
+      .then((data) => {
+        setCategories(data.categories), 
+        setName(data.username)
+      })
       .catch((err) => setError(err.message))
   }
 
@@ -25,7 +29,7 @@ const CategoriesHome = () => {
   return (
 
     <div className='text-center'>
-      <CategoryList categories={categories} fetchCategorie={fetchCategorie} />
+      <CategoryList categories={categories} fetchCategorie={fetchCategorie} username={name} />
       <AddCategory fetchCategorie={fetchCategorie} />
     </div>
 
