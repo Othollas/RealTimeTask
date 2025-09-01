@@ -1,8 +1,18 @@
 import express, { Router } from "express";
 import bcrypt from "bcrypt"
 import User from "../schemas/userSchema.js";
+import jwt from "jsonwebtoken";
+import 'dotenv/config'
+
 
 const router = express.Router();
+
+
+const generateToken = (userId, pseudo, userEmail) => {
+    return jwt.sign({ id: userId, username: pseudo, email: userEmail }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRATION,
+    });
+};
 
 router.post("/register", async (req, res) => {
 
@@ -37,7 +47,7 @@ router.post("/register", async (req, res) => {
         });
 
     } catch (err) {
-          if (err.code === 11000) {
+        if (err.code === 11000) {
             return res.status(400).json({ message: "Email ou Pseudo déja utilisé" })
         }
         if (err.name === "ValidationError") {
@@ -50,7 +60,34 @@ router.post("/register", async (req, res) => {
 
 
 router.post("/login", async (req, res) => {
-    console.log(req.body)
+
+    try {
+        const { email, password } = req.body;
+        const searchEmail = email.toLowerCase()
+
+        const response = await User.findOne({ email: searchEmail })
+        console.log(!response) 
+       
+        if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) }
+
+        const token = generateToken(response._id, response.username, response.email);
+
+        res.status(201).cookie("authToken", token, {
+            httpOnly: true,
+            secure: false, 
+            sameSite: "Strict",   
+            maxAge: 3600000,
+        }).json({ message: "Identifiant valide", find: true})
+
+
+
+    } catch (error) {
+        console.error(error)
+    }
+
+
+
+
 })
 
 

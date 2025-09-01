@@ -1,14 +1,36 @@
 import express from "express";
 import { ObjectId } from "mongodb";
 import Category from "../schemas/categorieSchema.js";
+import jwt from "jsonwebtoken";
+import 'dotenv/config'
 
 const router = express.Router();
 
-router.get("/", async (req, res) => { 
+const verifyToken = (req, res, next) => {
+    const token = req.cookies.authToken;
+    if (!token) {
+        req.user = { username: "Invité" };
+        return next();
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            req.user = { username: "Invité" };
+            return next();
+        } 
+
+        req.user = user;
+        next();
+    });
+};
+
+router.get("/", verifyToken, async (req, res) => {
     try {
+
         const categories = await Category.find();
-        
-        res.json(categories);
+
+
+        res.json({ categories: categories, username: req.user.username });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erreur Serveur" });
@@ -87,7 +109,7 @@ router.put("/:id", async (req, res) => {
             updated_at: updatedTime
         };
 
-        
+
         const result = await Category.replaceOne({ _id: new ObjectId(req.params.id) }, updatedCategorie);
 
         if (!result.acknowledged) {
