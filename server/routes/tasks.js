@@ -1,17 +1,24 @@
 import express from 'express';
-import { getDB } from '../db.js';
 import Task from '../schemas/taskSchema.js';
 import { ObjectId } from "mongodb";
+import verifyToken from '../function.js';
 
 
 const router = express.Router();
 
 
-router.get("/:id", async (req, res) => {
-    
+
+router.get("/:id", verifyToken, async (req, res) => {
+
     try {
-        const tasks = await Task.find({ category_id: req.params.id });
-        res.json(tasks);
+        
+        if (req.user) {
+            const tasks = await Task.find({ category_id: req.params.id });
+            res.json({ tasks, source: "db" });
+        }else{
+            res.json({source: "Guest"})
+        }
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erreur Serveur" });

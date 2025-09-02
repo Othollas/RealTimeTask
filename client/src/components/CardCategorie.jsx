@@ -24,23 +24,19 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                 credentials: "include"
             });
             const data = await response.json();
-
             const { tasks, source } = await data;
-
             if (source === "db") {
-
-
-
                 setCount(tasks.length)
             } else if (source === "Guest") {
 
-
-
-                setCount(0)
+                const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
+                const taskMatched = localTasks.filter(task => {
+                    if (id === task.category_id) {
+                        return task
+                    }
+                })
+                setCount(taskMatched.length)
             }
-
-
-
         } catch (error) {
             console.error(error)
         } finally {
@@ -108,30 +104,24 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                     throw new Error("Erreur")
                 }
             } else if (data.source === "Guest") {
-               
+
                 const oldStorageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"))
 
-                console.log(data.updatedCategorie.name)
-
-                const newStorage = oldStorageCategorie.map(element=>{
-                   if(element._id === categorie._id){
-                    return {
-                        ...element, 
-                        name: data.updatedCategorie.name,
-                        description: data.updatedCategorie.description,
-                        owner: data.updatedCategorie.owner,
-                        created_at: data.updatedCategorie.created_at,
-                        updated_at: data.updatedCategorie.updated_at}
-                   } 
-                   return element
+                const newStorage = oldStorageCategorie.map(element => {
+                    if (element._id === categorie._id) {
+                        return {
+                            ...element,
+                            name: data.updatedCategorie.name,
+                            description: data.updatedCategorie.description,
+                            owner: data.updatedCategorie.owner,
+                            created_at: data.updatedCategorie.created_at,
+                            updated_at: data.updatedCategorie.updated_at
+                        }
+                    }
+                    return element
                 })
-
                 localStorage.setItem("defaultCategorie", JSON.stringify(newStorage))
             }
-
-
-
-
         } catch (err) {
             console.error(err)
         } finally {
