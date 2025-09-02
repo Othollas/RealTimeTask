@@ -8,6 +8,13 @@ const AddCategory = ({ fetchCategorie }) => {
     const [description, setDescription] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const resetAddinginput = () => {
+        fetchCategorie();
+        setName('');
+        setDescription('');
+        setIsAdding(false);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -21,23 +28,30 @@ const AddCategory = ({ fetchCategorie }) => {
                 credentials: "include",
             });
 
-            if (response.ok) {
+
+            const data = await response.json()
+            console.log(data.source)
+            if (data.source === "Guest") {
+                const localCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
+                const newLocalCategorie = [...localCategorie, data.newCategorie];
+                console.log(localCategorie)
+                localStorage.setItem("defaultCategorie", JSON.stringify(newLocalCategorie));
+                  resetAddinginput();
+            } else if (response.ok) {
                 //Reinitialiser les champs et revenir au bouton initial
-                fetchCategorie();
-                setName('');
-                setDescription('');
-                setIsAdding(false);
+                resetAddinginput();
             } else {
                 throw new Error("Echec de L'envoi")
             }
         } catch (err) {
             console.error('Erreur:', err);
         } finally {
+            fetchCategorie()
             setIsLoading(false)
         }
     };
 
-    const handleReset =  () =>{
+    const handleReset = () => {
         setName('');
         setDescription('');
         setIsAdding(false);

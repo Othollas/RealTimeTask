@@ -12,6 +12,7 @@ const CategoriesHome = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const [name, setName] = useState('');
+ 
 
   const handleResetCategorie = () => {
     localStorage.setItem("defaultCategorie", JSON.stringify(categorieTemplate));
@@ -33,39 +34,39 @@ const CategoriesHome = () => {
         if (data.source === "db") {
           setCategories(data.categories);
           setName(data.username);
-        } else if(localStorage.length === 0) {
+        } else if (!("defaultCategorie" in localStorage)) {
           const defaultCategorie = categorieTemplate;
 
           const defaultTask = taskTemplate(null);
-
-          defaultCategorie.forEach((element, index) => {
+          
+         defaultCategorie.map((element, index) => {
             defaultTask[index].category_id = element._id;
           });
 
-       
           localStorage.setItem("defaultCategorie", JSON.stringify(categorieTemplate));
 
-          localStorage.setItem("defaultTasks", JSON.stringify(taskTemplate));
-          setName(data.username)
+          localStorage.setItem("defaultTasks", JSON.stringify(defaultTask));
+          setName(data.username);
 
+          setCategories(JSON.parse(localStorage.getItem("defaultCategorie")));
+
+        } else {
           const localCategories = localStorage.getItem("defaultCategorie");
-
           setCategories(JSON.parse(localCategories))
-
-          } else {
-            const localCategories = localStorage.getItem("defaultCategorie");
-            setCategories(JSON.parse(localCategories))
-          }
+        }
       })
       .catch((err) => setError(err.message))
   }
 
   if (error) return <p>erreur : {error}</p>;
 
+
   return (
 
     <div className='text-center'>
-      { JSON.parse(localStorage.defaultCategorie).length === 0  && <Button className='m-2' type="submit" variant='primary' onClick={handleResetCategorie} >Reset les categories</Button>}
+     
+          {localStorage.getItem("defaultCategorie") === '[]' && <Button className='m-2' type="submit" variant='primary' onClick={handleResetCategorie} >Reset les categories</Button>}
+      
       <CategoryList categories={categories} fetchCategorie={fetchCategorie} username={name} />
       <AddCategory fetchCategorie={fetchCategorie} />
     </div>

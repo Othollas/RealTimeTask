@@ -1,36 +1,24 @@
 import express from "express";
 import { ObjectId } from "mongodb";
 import Category from "../schemas/categorieSchema.js";
-import jwt from "jsonwebtoken";
-import 'dotenv/config'
+import verifyToken, {generateId} from "../function.js";
 
 const router = express.Router();
 
-const verifyToken = (req, res, next) => {
-    const token = req.cookies.authToken;
-    if (!token) {
-        req.user = { username: "Invité" };
-        return next();
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            req.user = { username: "Invité" };
-            return next();
-        } 
-
-        req.user = user;
-        next();
-    });
-};
 
 router.get("/", verifyToken, async (req, res) => {
     try {
 
+
         const categories = await Category.find();
 
+        if (req.user) {
+            res.json({ categories: categories, username: req.user.username, source: "db" });
+        } else {
+            res.json({ categories: categories, username: "Invité", source: "Guest" });
+        }
 
-        res.json({ categories: categories, username: req.user.username });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Erreur Serveur" });
@@ -38,9 +26,9 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 
-
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
     try {
+
         const { name, description, owner } = req.body; // récuperation du post
 
 
@@ -49,8 +37,7 @@ router.post("/", async (req, res) => {
             return res.status(400).json({ message: "Le nom est obligatoire" })
         }
 
-
-        const newCategorie = {
+        const tempCategorie = {
             name,
             description: description === '' ? null : description,
             owner: owner || null,
@@ -58,11 +45,15 @@ router.post("/", async (req, res) => {
             updated_at: new Date()
         };
 
-        const result = await Category.insertOne(newCategorie);
+        if (req.user) {
+            const result = await Category.insertOne(tempCategorie);
+            res.status(201).json({result, source: "db"});
+        }
 
-
-        //Response avec succes
-        res.status(201).json(result);
+        if (!req.user) {
+           const newCategorie = { _id: generateId(), ...tempCategorie};
+            return res.json({newCategorie, source: "Guest" });
+        }
 
     } catch (err) {
         //Gestion des erreurs 
@@ -70,37 +61,46 @@ router.post("/", async (req, res) => {
     }
 })
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
     try {
-        // Vérification que l'ID est valide
-        if (!ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: 'ID invalide' });
+
+        if (req.user) {
+            // Vérification que l'ID est valide
+            if (!ObjectId.isValid(req.params.id)) {
+                return res.status(400).json({ message: 'ID invalide' });
+            }
+
+            const result = await Category.deleteOne({ _id: new ObjectId(req.params.id) });
+
+            console.log('Résultat suppression:', result);
+            // Vérification avec deletedCount
+            if (result.deletedCount === 0) {
+                return res.status(404).json({ message: 'Catégorie non trouvée' });
+            }
+
+            res.json({
+                message: 'Catégorie supprimée avec succès',
+                deletedCount: result.deletedCount,
+                source: "db"
+            });
+        } else {
+            res.json({ source: "Guest" })
         }
 
-        const result = await Category.deleteOne({ _id: new ObjectId(req.params.id) });
-
-        console.log('Résultat suppression:', result);
-        // Vérification avec deletedCount
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ message: 'Catégorie non trouvée' });
-        }
-
-        res.json({
-            message: 'Catégorie supprimée avec succès',
-            deletedCount: result.deletedCount
-        });
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
 })
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", verifyToken, async (req, res) => {
     try {
-        const id = req.params.id;
+
+
         const { name, description, owner, created_at } = req.body;
+
         const updatedTime = new Date();
 
-        console.log(name, description, Date(created_at), req.params.id);
+
         const updatedCategorie = {
             name: name,
             description: description == '' ? null : description,
@@ -109,17 +109,30 @@ router.put("/:id", async (req, res) => {
             updated_at: updatedTime
         };
 
+        if (req.user) {
+            const result = await Category.replaceOne({ _id: new ObjectId(req.params.id) }, updatedCategorie);
 
-        const result = await Category.replaceOne({ _id: new ObjectId(req.params.id) }, updatedCategorie);
+            if (!result.acknowledged) {
+                return res.status(404).json({ message: 'Catégorie non trouvée' });
+            };
 
-        if (!result.acknowledged) {
-            return res.status(404).json({ message: 'Catégorie non trouvée' });
-        };
+            res.json({
+                message: 'Categorie modifié avec succés',
+                modifiedCount: result.modifiedCount,
+                source: "db"
+            });
+        } else {
 
-        res.json({
-            message: 'Categorie modifié avec succés',
-            modifiedCount: result.modifiedCount
-        });
+            res.json({
+                updatedCategorie: updatedCategorie,
+                source: "Guest"
+            })
+        }
+
+
+
+
+
     } catch (err) {
         res.status(500).json({ message: err.message })
     };

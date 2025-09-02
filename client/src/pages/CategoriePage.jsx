@@ -14,19 +14,23 @@ const [tasks, setTasks] = useState([]);
 const [error, setError] = useState(null);
 
     const fetchTasks = async () => {
-        fetch(`http://localhost:3001/api/tasks/${params.id}`).then((res) => {
-
+        fetch(`http://localhost:3001/api/tasks/${params.id}`, {
+            credentials: "include"
+        })
+        .then((res) => {
             if (!res.ok) throw new Error("Erreur de chargement");
             return res.json();
         })
-            .then((data) => setTasks(data))
+            .then((data) => {
+                console.log(data.source)
+                setTasks(data)
+            })
             .catch((err) => setError(err.message))
     }
 
     if (error) {
         throw new Error("erreur", error);
     }
-
 
     return (
         <div className="text-center my-5">

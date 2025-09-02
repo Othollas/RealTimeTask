@@ -18,14 +18,9 @@ router.post("/register", async (req, res) => {
 
     try {
         const is_valid = req.body.username != '' && req.body.email.length > 6 && req.body.password.length > 6;
-
         if (!is_valid) { return res.status(400).json({ message: 'Erreur de champ' }) };
-
-
         const { username, email, password } = req.body;
-
         const hashPassword = await bcrypt.hash(password, 10);
-
         const newUser = {
             username,
             email,
@@ -66,7 +61,6 @@ router.post("/login", async (req, res) => {
         const searchEmail = email.toLowerCase()
 
         const response = await User.findOne({ email: searchEmail })
-        console.log(!response) 
        
         if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) }
 
@@ -84,9 +78,6 @@ router.post("/login", async (req, res) => {
     } catch (error) {
         console.error(error)
     }
-
-
-
 
 })
 
