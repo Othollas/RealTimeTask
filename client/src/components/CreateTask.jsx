@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 
 const AddTask = ({ fetchTasks, id_category }) => {
@@ -7,30 +7,41 @@ const AddTask = ({ fetchTasks, id_category }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [description, setDescription] = useState('');
 
+    const resetInputTask = () =>{
+                setTitle('');
+                setDescription('');
+                setIsAdding(false);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-
         try {
             //exemple de rêquete POST avec fetch
             const response = await fetch('http://localhost:3001/api/tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, description, id_category }),
+                credentials: "include"
             });
 
-            if (response.ok) {
+            const data = await response.json();
+
+            if (response.ok && data.source === "db") {
                 //Reinitialiser les champs et revenir au bouton initial
-                fetchTasks();
-                setTitle('');
-                setDescription('');
-                setIsAdding(false);
-            } else {
+                resetInputTask();
+            } else if(data.source === "Guest"){
+                const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
+                const newLocalTasks = [...localTasks, data.newTask];
+                localStorage.setItem("defaultTasks", JSON.stringify(newLocalTasks));
+                resetInputTask();
+            }else{
                 throw new Error("Echec de L'envoi")
             }
         } catch (err) {
             console.error('Erreur:', err);
         } finally {
+            fetchTasks();
             setIsLoading(false)
         }
     };

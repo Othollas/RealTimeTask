@@ -22,8 +22,13 @@ const [error, setError] = useState(null);
             return res.json();
         })
             .then((data) => {
-                console.log(data.source)
-                setTasks(data)
+                if(data.source === "db") {
+                    setTasks(data.tasks)
+                }else if(data.source === "Guest"){
+                    const taskStorage = JSON.parse(localStorage.getItem("defaultTasks"));
+                    const data = taskStorage.filter(task=>task.category_id === params.id);
+                    setTasks(data)
+                }
             })
             .catch((err) => setError(err.message))
     }

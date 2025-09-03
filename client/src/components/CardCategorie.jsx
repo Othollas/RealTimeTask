@@ -35,16 +35,13 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                         return task
                     }
                 })
-                setCount(taskMatched.length)
+                setCount(taskMatched.length);
             }
         } catch (error) {
             console.error(error)
         } finally {
-            fetchCategorie()
-        }
-
-
-
+            fetchCategorie();
+        };
     }
 
     const handleDelete = async (e) => {
@@ -69,13 +66,12 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                 console.log('✅ Supprimé avec succès');
 
             } else if (data.source === "Guest") {
-                const storageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"))
-                console.log(storageCategorie);
+                const storageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
                 const newStorage = storageCategorie.filter(element => {
-                    return element._id !== categorie._id
-                })
+                    return element._id !== categorie._id;
+                });
 
-                localStorage.setItem("defaultCategorie", JSON.stringify(newStorage))
+                localStorage.setItem("defaultCategorie", JSON.stringify(newStorage));
             }
 
         } catch (err) {

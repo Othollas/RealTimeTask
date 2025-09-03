@@ -27,14 +27,12 @@ const AddCategory = ({ fetchCategorie }) => {
                 body: JSON.stringify({ name, description }),
                 credentials: "include",
             });
-
-
             const data = await response.json()
-            console.log(data.source)
+            
+            
             if (data.source === "Guest") {
                 const localCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
                 const newLocalCategorie = [...localCategorie, data.newCategorie];
-                console.log(localCategorie)
                 localStorage.setItem("defaultCategorie", JSON.stringify(newLocalCategorie));
                   resetAddinginput();
             } else if (response.ok) {

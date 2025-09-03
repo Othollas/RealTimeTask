@@ -7,7 +7,7 @@ import AddTask from "./CreateTask";
 const TaskList = ({ tasks, fetchTasks }) => {
 
 
-    // Récupération de la 
+    // Récupération des taches
     const params = useParams();
     const cat_id = params.id;
 
