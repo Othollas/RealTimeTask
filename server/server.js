@@ -6,8 +6,10 @@ import categoriesRouter from "./routes/categories.js";
 import tasksRouter from "./routes/tasks.js"
 import authRouter from "./routes/auth.js"
 import cookieParser from "cookie-parser";
+import { WebSocketServer } from "ws";
 
 const app = express();
+const wss = new WebSocketServer({ port : 8080 });
 
 app.use(cors({
     origin: "http://localhost:5173",
@@ -26,6 +28,15 @@ app.use("/api/auth", authRouter);
 
 const PORT = 3001;
 
+
+wss.on('connection', (ws)=> {
+    console.log('Nouvelle connexion');
+
+    ws.on('message', (message)=>{
+        console.log('Message reçu:', message.toString());
+        ws.send(`Echo: ${message}`)
+    });
+});
 
 connectDB().then(()=>{
     app.listen(PORT, () => {
