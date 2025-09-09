@@ -9,6 +9,17 @@ import Login from './components/Login'
 import Register from './components/Register'
 
 
+// const socket = new WebSocket('ws://localhost:8080');
+
+// socket.onopen = () => {
+//   console.log('Connecté');
+//   socket.send(JSON.stringify({ type: 'hello', content: 'Salut server' }));
+// };
+
+// socket.onmessage = (event)=>{
+//   console.log('Message server:', event.data)
+// }
+
 function App() {
 
   return (

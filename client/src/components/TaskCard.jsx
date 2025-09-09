@@ -31,7 +31,6 @@ function TaskCard({ task, fetchTasks }) {
 
       const data = await response.json();
 
-      console.log(data)
       if (data.source === "db") {
         if (!response.ok) {
           throw new Error(data.message || `Erreur ${response.status}`);
