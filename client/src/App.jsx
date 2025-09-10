@@ -7,6 +7,9 @@ import CategoriePage from './pages/CategoriePage'
 import NotFound from './pages/NotFound'
 import Login from './components/Login'
 import Register from './components/Register'
+import { useState } from 'react'
+
+
 
 
 // const socket = new WebSocket('ws://localhost:8080');
@@ -22,15 +25,16 @@ import Register from './components/Register'
 
 function App() {
 
+  const [user, setUser] = useState(null) //user = {info, token}
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CategoriesHome />} />
-        <Route path="/login" element={<Login/>} />
+        <Route path="/" element={<CategoriesHome user={user} />} />
+        <Route path="/login" element={<Login onLogin={setUser} />} />
         <Route path="/register" element={<Register/>} />
-        <Route path="/categorie/:id" element={<CategoriePage />} />
+        <Route path="/categorie/:id" element={<CategoriePage user={user} />} />
         <Route path="*" element={<NotFound />} />
-
       </Routes>
     </BrowserRouter>
   )
