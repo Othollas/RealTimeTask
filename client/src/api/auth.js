@@ -12,6 +12,19 @@ export const register  =  async (userData) => {
     return response.json();
 }
 
+export const logout = async () => {
+
+    const response = await fetch(`${url}/logout`, {
+        method: "POST",
+        credentials: "include"
+    });
+
+    return response.json()
+
+    
+};
+
+
 
 export const login = async (userData) => {
     const response = await fetch(`${url}/login`, {
