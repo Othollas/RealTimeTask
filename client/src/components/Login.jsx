@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { login } from "../api/auth";
 import { useNavigate } from "react-router-dom";
-import { connectSocket } from "../service/webSocketService";
 
-const Login = () => {
+
+const Login = ({ onLogin }) => {
     const navigate = useNavigate();
     const [error, setError] = useState(false);
     const [email, setEmail] = useState('');
@@ -21,11 +21,11 @@ const Login = () => {
             try {
                 const result = await login(data);
 
-                console.log(result.find)
-                result.find ? console.log("login reussi", result) : console.log("login raté", result)
-                connectSocket();
-               
-                if (result.find) { navigate("/", { replace: true }) }
+                result.find ? console.log("login reussi", result) : console.log("login raté", result);
+            
+                if (result.find) { 
+                    onLogin(true); 
+                    navigate("/", { replace: true }) };
 
             } catch (error) {
                 console.error("Erreur :", error.message);
