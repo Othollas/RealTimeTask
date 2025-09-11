@@ -7,7 +7,8 @@ import CategoriePage from './pages/CategoriePage'
 import NotFound from './pages/NotFound'
 import Login from './components/Login'
 import Register from './components/Register'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { connectSocket } from './service/webSocketService'
 
 
 
@@ -26,6 +27,16 @@ import { useState } from 'react'
 function App() {
 
   const [user, setUser] = useState(null) //user = {info, token}
+
+  useEffect(()=>{
+            if (user) {
+            const ws = connectSocket();
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data)
+                console.log("useEffect", msg)
+            }
+        }
+  })
 
   return (
     <BrowserRouter>
