@@ -2,12 +2,12 @@ import jwt from "jsonwebtoken";
 import 'dotenv/config'
 
 export const generateId = () => {
-    return Date.now().toString(36) + Math.random().toString().substring(2,9)
+    return Date.now().toString(36) + Math.random().toString().substring(2, 9)
 }
 
 const verifyToken = (req, res, next) => {
     const token = req.cookies.authToken;
-    
+
     if (!token) {
         req.user = null;
         return next();
@@ -22,6 +22,15 @@ const verifyToken = (req, res, next) => {
         req.user = user;
         next();
     });
+};
+
+
+export const verifyTokenWS = (token) =>{
+    try{
+        return jwt.verify(token, process.env.JWT_SECRET)
+    } catch (err) {
+        return null;
+    }
 };
 
 export default verifyToken;

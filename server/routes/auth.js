@@ -64,12 +64,13 @@ router.post("/login", async (req, res) => {
        
         if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) }
 
+        if(response.groups) {console.log(response.groups)}
         const token = generateToken(response._id, response.username, response.email);
 
         res.status(201).cookie("authToken", token, {
             httpOnly: true,
             secure: false, 
-            sameSite: "Strict",   
+            sameSite: "Strict",
             maxAge: 3600000,
         }).json({ message: "Identifiant valide", find: true})
 
@@ -81,6 +82,13 @@ router.post("/login", async (req, res) => {
 
 })
 
-
+router.post("/logout", (req, res)=>{
+    res.clearCookie("authToken", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Strict"
+    });
+    res.status(200).json({ message: "Utilisateur déconnecté" });
+})
 
 export default router;
