@@ -4,20 +4,11 @@ import AddCategory from '../components/CreateCategorie'
 import categorieTemplate from '../template/categorieTemplate';
 import taskTemplate from '../template/taskTemplate';
 import Button from 'react-bootstrap/Button';
-import { connectSocket } from '../service/webSocketService';
 import { useNavigate } from 'react-router-dom';
+import { EventBus } from '../service/bus';
 
 
 const CategoriesHome = ({ user }) => {
-
-  useEffect(() => {
-    if (user) {
-      const ws = connectSocket();
-      console.log(ws)
-    }
-
-  }, []);
-
 
 
   const [categories, setCategories] = useState([]);
@@ -25,8 +16,29 @@ const CategoriesHome = ({ user }) => {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
+
+
+  useEffect(() => {
+    fetchCategorie();
+
+  }, [user]);
+
+useEffect(()=>{
+     if (!user) return;
+    // Abonnement création 
+    const unsubCreate = EventBus.subscribe("CREATE_CATEGORY", (newCat) => {
+      console.log("[CategoriesHome] Catégorie reçue via EventBus :", newCat)
+      setCategories(prev => [...prev, newCat]);
+      console.log("Nouvelle catégorie reçue :", newCat)
+      alert("Nouvelle catégorie reçue : " + newCat.name);
+    });
+
+    return () => unsubCreate();
+}, [])
+
+
   const initializeCategorie = () => {
-    const defaultCategorie = categorieTemplate;
+    const defaultCategorie = categorieTemplate; // J'utilise un template pour le format de mes categories
 
     const defaultTask = taskTemplate(null);
 
@@ -78,49 +90,8 @@ const CategoriesHome = ({ user }) => {
         })
         .catch((err) => setError(err.message))
     }
-
-
   }
 
-
-
-  // const fetchCategorie = async () => {
-  //   fetch("http://localhost:3001/api/categories", {
-  //     method: "GET",
-  //     credentials: "include"
-  //   })
-  //     .then((res) => {
-  //       if (!res.ok) throw new Error("Erreur de chargement");
-  //       return res.json();
-  //     })
-  //     .then((data) => {
-
-  //       if (data.source === "db") {
-  //         setCategories(data.categories);
-  //         setName(data.username);
-  //       } else if (!("defaultCategorie" in localStorage)) {
-  //         const defaultCategorie = categorieTemplate;
-
-  //         const defaultTask = taskTemplate(null);
-
-  //         defaultCategorie.map((element, index) => {
-  //           defaultTask[index].category_id = element._id;
-  //         });
-
-  //         localStorage.setItem("defaultCategorie", JSON.stringify(categorieTemplate));
-
-  //         localStorage.setItem("defaultTasks", JSON.stringify(defaultTask));
-  //         setName(data.username);
-
-  //         setCategories(JSON.parse(localStorage.getItem("defaultCategorie")));
-
-  //       } else {
-  //         const localCategories = localStorage.getItem("defaultCategorie");
-  //         setCategories(JSON.parse(localCategories))
-  //       }
-  //     })
-  //     .catch((err) => setError(err.message))
-  // }
 
   if (error) return <p>erreur : {error}</p>;
 
@@ -130,8 +101,8 @@ const CategoriesHome = ({ user }) => {
     <div className='text-center'>
 
       {localStorage.getItem("defaultCategorie") === '[]' && <Button className='m-2' type="submit" variant='primary' onClick={handleResetCategorie} >Reset les categories</Button>}
-      {name === "Guest" && <Button className='mt-2' variant="primary" onClick={() => { navigate("/login") }}>login</Button>}
-      <CategoryList categories={categories} fetchCategorie={fetchCategorie} username={name} user={user}/>
+      {!user && <Button className='mt-2' variant="primary" onClick={() => { navigate("/login") }}>login</Button>}
+      <CategoryList categories={categories} fetchCategorie={fetchCategorie} username={name} user={user} />
       <AddCategory fetchCategorie={fetchCategorie} />
     </div>
 
