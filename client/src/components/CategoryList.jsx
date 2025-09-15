@@ -3,7 +3,14 @@ import CardCategorie from "./CardCategorie";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
-export default function CategoryList({ categories, fetchCategorie, username }) {
+import Logout from "./Logout";
+
+
+
+
+export default function CategoryList({ categories, fetchCategorie, username, user }) {
+
+
 
     useEffect(() => {
         fetchCategorie();
@@ -13,9 +20,11 @@ export default function CategoryList({ categories, fetchCategorie, username }) {
         <div className="text-center">
             <h2 className="m-5">Catégories</h2>
             <p>Bienvenue {username}</p>
+            {user &&  <Logout />}
+           
             <Container>
                 <Row className="gap-3 justify-content-center">
-                    {categories.map((cat)=>(<CardCategorie key={cat._id} categorie={cat} fetchCategorie={fetchCategorie} />))}
+                    {categories.map((cat)=>(<CardCategorie key={cat._id} categorie={cat} fetchCategorie={fetchCategorie} user={user} />))}
                 </Row>
             </Container>
         </div>
