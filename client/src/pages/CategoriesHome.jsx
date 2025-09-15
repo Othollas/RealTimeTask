@@ -20,38 +20,52 @@ const CategoriesHome = ({ user }) => {
 
   useEffect(() => {
     fetchCategorie();
-
   }, [user]);
 
-useEffect(()=>{
-     if (!user) return;
+  useEffect(() => {
+    console.log(user)
+ 
     // Abonnement création 
     const unsubCreate = EventBus.subscribe("CREATE_CATEGORY", (newCat) => {
       console.log("[CategoriesHome] Catégorie reçue via EventBus :", newCat)
       setCategories(prev => [...prev, newCat]);
       console.log("Nouvelle catégorie reçue :", newCat)
-      alert("Nouvelle catégorie reçue : " + newCat.name);
+      // alert("Nouvelle catégorie reçue : " + newCat.name);
     });
 
     return () => unsubCreate();
+  }, [])
+
+useEffect(()=>{
+  const unsubDeleted = EventBus.subscribe("DELETED_CATEGORY", (deletedCat) => {
+    console.log("[CategoriesHome] Catégorie reçue via Eventbus :", deletedCat)
+    setCategories(prev => prev.filter(category => category._id !== deletedCat.deletedCategory._id));
+    console.log("Suppresion Categorie : ", deletedCat)
+  });
+
+  return () => unsubDeleted();
 }, [])
 
 
+useEffect(()=>{
+  const unsubModify = EventBus.subscribe("UPDATE_CATEGORY", (modifiedCat)=>{
+    console.log("[CategoriesHome] Caégorie reçu via Eventbus :", modifiedCat);
+    setCategories(prev => prev.map(category => category._id === modifiedCat.updatedCategory._id ? modifiedCat.updatedCategory : category))
+  });
+
+  return ()=> unsubModify();
+}, [])
+
   const initializeCategorie = () => {
     const defaultCategorie = categorieTemplate; // J'utilise un template pour le format de mes categories
-
     const defaultTask = taskTemplate(null);
-
     defaultCategorie.map((element, index) => {
       defaultTask[index].category_id = element._id;
     });
 
     localStorage.setItem("defaultCategorie", JSON.stringify(categorieTemplate));
-
     localStorage.setItem("defaultTasks", JSON.stringify(defaultTask));
-
     setName("Guest");
-
     setCategories(JSON.parse(localStorage.getItem("defaultCategorie")));
   }
 
@@ -103,7 +117,7 @@ useEffect(()=>{
       {localStorage.getItem("defaultCategorie") === '[]' && <Button className='m-2' type="submit" variant='primary' onClick={handleResetCategorie} >Reset les categories</Button>}
       {!user && <Button className='mt-2' variant="primary" onClick={() => { navigate("/login") }}>login</Button>}
       <CategoryList categories={categories} fetchCategorie={fetchCategorie} username={name} user={user} />
-      <AddCategory fetchCategorie={fetchCategorie} />
+      <AddCategory fetchCategorie={fetchCategorie} user={user} />
     </div>
 
 

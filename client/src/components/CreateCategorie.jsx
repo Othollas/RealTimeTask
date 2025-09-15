@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import CategoryList from "./CategoryList";
-import Button from "react-bootstrap/esm/Button";
+import { useState } from "react";
+import { sendMessage } from "../service/webSocketService";
+import { EventBus } from "../service/bus";
+import generateId from "../function";
 
-const AddCategory = ({ fetchCategorie }) => {
+const AddCategory = ({ fetchCategorie, user }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -19,27 +20,37 @@ const AddCategory = ({ fetchCategorie }) => {
         e.preventDefault();
         setIsLoading(true);
 
+        console.log(user)
+
         try {
-            //exemple de rêquete POST avec fetch
-            const response = await fetch('http://localhost:3001/api/categories', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description }),
-                credentials: "include",
-            });
-            const data = await response.json()
-            
-            
-            if (data.source === "Guest") {
+            if (!user) {
+                const newDescription = description === "" ? null : description;
+                let newCategorie = { _id: generateId(), name: name, description: newDescription, owner: null, created_at: Date.now(), uptdated_at: Date.now()}
+                console.log(newCategorie)
                 const localCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
-                const newLocalCategorie = [...localCategorie, data.newCategorie];
+                const newLocalCategorie = [...localCategorie, newCategorie];
                 localStorage.setItem("defaultCategorie", JSON.stringify(newLocalCategorie));
-                  resetAddinginput();
-            } else if (response.ok) {
-                //Reinitialiser les champs et revenir au bouton initial
                 resetAddinginput();
-            } else {
-                throw new Error("Echec de L'envoi")
+            }
+
+            if (user) {
+                const response = await fetch('http://localhost:3001/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description }),
+                    credentials: "include",
+                });
+                const data = await response.json()
+                // envoie à WS à dautre clients
+                sendMessage({ type: "CREATE_CATEGORY", payload: data.result })
+                // Optionnel : notifier localement ce composant
+                EventBus.publish("CREATE_CATEGORY", data.result)
+                if (response.ok) {
+                    //Reinitialiser les champs et revenir au bouton initial
+                    resetAddinginput();
+                } else {
+                    throw new Error("Echec de L'envoi")
+                }
             }
         } catch (err) {
             console.error('Erreur:', err);

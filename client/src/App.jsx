@@ -54,8 +54,10 @@ function App() {
       const ws = connectSocket();
       ws.onmessage = (event) => {
         try {
+          
           const msg = JSON.parse(event.data);
           console.log("[App] Message WS reçu :", msg);
+          console.log(msg.type, msg.payload);
           EventBus.publish(msg.type, msg.payload);
         } catch (error) {
           console.error("Message WS invalide", error.data);
@@ -65,15 +67,14 @@ function App() {
     }
   }, [user])
 
- const testCreateCategory = () => {
-    const fakeCategory = { _id: "fake123", name: "Catégorie TEST" };
-    console.log("[App] Publication manuelle :", fakeCategory);
-    EventBus.publish("CREATE_CATEGORY", fakeCategory);
-  };
+//  const testCreateCategory = () => {
+//     const fakeCategory = { _id: "fake123", name: "Catégorie TEST" };
+//     console.log("[App] Publication manuelle :", fakeCategory);
+//     EventBus.publish("CREATE_CATEGORY", fakeCategory);
+//   };
 
 
   return (
-    <> <button onClick={testCreateCategory}>Tester CREATE_CATEGORY</button>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<CategoriesHome user={user} />} />
@@ -83,7 +84,6 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
-    </>
   )
 }
 

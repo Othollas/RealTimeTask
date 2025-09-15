@@ -3,46 +3,76 @@ import Card from 'react-bootstrap/Card';
 import img from "/vite.svg?url"
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { sendMessage } from '../service/webSocketService';
 
 
 
-const CardCategorie = ({ categorie, fetchCategorie }) => {
+const CardCategorie = ({ categorie, fetchCategorie, user }) => {
     const [count, setCount] = useState(0);
     const [isModify, setIsModify] = useState(false);
     const [name, setName] = useState(categorie.name);
     const [description, setDescription] = useState(categorie.description || "");
     const created_at = categorie.created_at;
 
+
     useEffect(() => {
         getTaskCount(categorie._id)
     }, [])
 
+
     const getTaskCount = async (id) => {
 
         try {
-            const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
-                credentials: "include"
-            });
-            const data = await response.json();
-            const { tasks, source } = await data;
-            if (source === "db") {
-                setCount(tasks.length)
-            } else if (source === "Guest") {
-
+            if (!user) {
                 const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
-                const taskMatched = localTasks.filter(task => {
-                    if (id === task.category_id) {
-                        return task
-                    }
-                })
+                const taskMatched = localTasks.filter(task => id === task.category_id)
                 setCount(taskMatched.length);
             }
+            if (user) {
+                const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
+                    credentials: "include"
+                });
+                const data = await response.json();
+                const { tasks } = await data;
+
+                setCount(tasks.length)
+            }
+
         } catch (error) {
             console.error(error)
         } finally {
             fetchCategorie();
         };
     }
+
+
+
+    // const getTaskCount = async (id) => {
+
+    //     try {
+    //         const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
+    //             credentials: "include"
+    //         });
+    //         const data = await response.json();
+    //         const { tasks, source } = await data;
+    //         if (source === "db") {
+    //             setCount(tasks.length)
+    //         } else if (source === "Guest") {
+
+    //             const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
+    //             const taskMatched = localTasks.filter(task => {
+    //                 if (id === task.category_id) {
+    //                     return task
+    //                 }
+    //             })
+    //             setCount(taskMatched.length);
+    //         }
+    //     } catch (error) {
+    //         console.error(error)
+    //     } finally {
+    //         fetchCategorie();
+    //     };
+    // }
 
     const handleDelete = async (e) => {
         e.preventDefault();
@@ -62,7 +92,7 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                 if (!response.ok) {
                     throw new Error(data.message || `Erreur ${response.status}`);
                 }
-
+                sendMessage({ type: "DELETED_CATEGORY", payload : data})
                 console.log('✅ Supprimé avec succès');
 
             } else if (data.source === "Guest") {
@@ -99,6 +129,13 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                 if (!response.ok) {
                     throw new Error("Erreur")
                 }
+
+                sendMessage({
+                    type: "UPDATE_CATEGORY",
+                    payload:data,
+                    sessionId: "abc123"
+                })
+
             } else if (data.source === "Guest") {
 
                 const oldStorageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"))
@@ -132,7 +169,12 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
             <Link to={`/categorie/${categorie._id}`}><Card.Img className='mt-2' variant="top" src={img} /></Link>
 
             <Card.Body className='text-center' >
-                <Link to={`/categorie/${categorie._id}`}><Card.Title>{categorie.name}</Card.Title></Link>
+
+                <Link to={`/categorie/${categorie._id}`}>
+                    <Card.Title>{categorie.name}</Card.Title>
+
+                </Link>
+
                 <Card.Text>{categorie.description}</Card.Text>
                 <Card.Text>{count === 1 || count === 0 ? `Vous avez ${count} tache` : `Vous avez ${count} taches`}</Card.Text>
                 <div className='text-center'>
@@ -175,7 +217,7 @@ const CardCategorie = ({ categorie, fetchCategorie }) => {
                 {!isModify ? (
                     <Button as='a' className='m-1' variant="danger" action={null} onClick={handleDelete} >suppr</Button>
                 ) : (
-                    <Button as='a' className='m-1 d-none' variant="danger" action={null} onClick={handleDelete} >suppr</Button>
+                    null
                 )}
 
             </Card.Body>
