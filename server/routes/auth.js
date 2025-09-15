@@ -82,6 +82,19 @@ router.post("/login", async (req, res) => {
 
 })
 
+router.get("/me", (req, res) => {
+    const token = req.cookies.authToken;
+    if(!token) return res.status(401).json({ loggedIn: false });
+
+    try{
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        res.json({ loggedIn: true, user });
+    }catch{
+        res.status(401).json({ loggedIn: false });
+    }
+});
+
+
 router.post("/logout", (req, res)=>{
     res.clearCookie("authToken", {
         httpOnly: true,
