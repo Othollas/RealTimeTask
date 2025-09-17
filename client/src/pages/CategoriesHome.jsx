@@ -5,13 +5,13 @@ import categorieTemplate from '../template/categorieTemplate';
 import taskTemplate from '../template/taskTemplate';
 import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom';
-import { EventBus } from '../service/bus';
+import { Toast } from 'bootstrap';
 
 
-const CategoriesHome = ({ user }) => {
+const CategoriesHome = ({ user, categories, setCategories }) => {
 
 
-  const [categories, setCategories] = useState([]);
+
   const [error, setError] = useState(null);
   const [name, setName] = useState('');
   const navigate = useNavigate();
@@ -22,39 +22,6 @@ const CategoriesHome = ({ user }) => {
     fetchCategorie();
   }, [user]);
 
-  useEffect(() => {
-    console.log(user)
- 
-    // Abonnement création 
-    const unsubCreate = EventBus.subscribe("CREATE_CATEGORY", (newCat) => {
-      console.log("[CategoriesHome] Catégorie reçue via EventBus :", newCat)
-      setCategories(prev => [...prev, newCat]);
-      console.log("Nouvelle catégorie reçue :", newCat)
-      // alert("Nouvelle catégorie reçue : " + newCat.name);
-    });
-
-    return () => unsubCreate();
-  }, [])
-
-useEffect(()=>{
-  const unsubDeleted = EventBus.subscribe("DELETED_CATEGORY", (deletedCat) => {
-    console.log("[CategoriesHome] Catégorie reçue via Eventbus :", deletedCat)
-    setCategories(prev => prev.filter(category => category._id !== deletedCat.deletedCategory._id));
-    console.log("Suppresion Categorie : ", deletedCat)
-  });
-
-  return () => unsubDeleted();
-}, [])
-
-
-useEffect(()=>{
-  const unsubModify = EventBus.subscribe("UPDATE_CATEGORY", (modifiedCat)=>{
-    console.log("[CategoriesHome] Caégorie reçu via Eventbus :", modifiedCat);
-    setCategories(prev => prev.map(category => category._id === modifiedCat.updatedCategory._id ? modifiedCat.updatedCategory : category))
-  });
-
-  return ()=> unsubModify();
-}, [])
 
   const initializeCategorie = () => {
     const defaultCategorie = categorieTemplate; // J'utilise un template pour le format de mes categories
@@ -113,11 +80,11 @@ useEffect(()=>{
   return (
 
     <div className='text-center'>
-
       {localStorage.getItem("defaultCategorie") === '[]' && <Button className='m-2' type="submit" variant='primary' onClick={handleResetCategorie} >Reset les categories</Button>}
       {!user && <Button className='mt-2' variant="primary" onClick={() => { navigate("/login") }}>login</Button>}
       <CategoryList categories={categories} fetchCategorie={fetchCategorie} username={name} user={user} />
-      <AddCategory fetchCategorie={fetchCategorie} user={user} />
+      <AddCategory fetchCategorie={fetchCategorie} user={user}/>
+     
     </div>
 
 

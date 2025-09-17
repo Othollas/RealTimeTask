@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { sendMessage } from "../service/webSocketService";
-import { EventBus } from "../service/bus";
 import generateId from "../function";
+import { toastService } from "../service/toastService";
 
 const AddCategory = ({ fetchCategorie, user }) => {
     const [isAdding, setIsAdding] = useState(false);
@@ -20,13 +20,10 @@ const AddCategory = ({ fetchCategorie, user }) => {
         e.preventDefault();
         setIsLoading(true);
 
-        console.log(user)
-
         try {
             if (!user) {
                 const newDescription = description === "" ? null : description;
-                let newCategorie = { _id: generateId(), name: name, description: newDescription, owner: null, created_at: Date.now(), uptdated_at: Date.now()}
-                console.log(newCategorie)
+                let newCategorie = { _id: generateId(), name: name, description: newDescription, owner: null, created_at: Date.now(), uptdated_at: Date.now() }
                 const localCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
                 const newLocalCategorie = [...localCategorie, newCategorie];
                 localStorage.setItem("defaultCategorie", JSON.stringify(newLocalCategorie));
@@ -43,8 +40,9 @@ const AddCategory = ({ fetchCategorie, user }) => {
                 const data = await response.json()
                 // envoie à WS à dautre clients
                 sendMessage({ type: "CREATE_CATEGORY", payload: data.result })
+                toastService.show(`Création de la catégorie`, 'success')
                 // Optionnel : notifier localement ce composant
-                EventBus.publish("CREATE_CATEGORY", data.result)
+                // EventBus.publish("CREATE_CATEGORY", data.result)
                 if (response.ok) {
                     //Reinitialiser les champs et revenir au bouton initial
                     resetAddinginput();

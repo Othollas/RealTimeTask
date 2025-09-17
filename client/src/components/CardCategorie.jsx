@@ -46,34 +46,6 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
     }
 
 
-
-    // const getTaskCount = async (id) => {
-
-    //     try {
-    //         const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
-    //             credentials: "include"
-    //         });
-    //         const data = await response.json();
-    //         const { tasks, source } = await data;
-    //         if (source === "db") {
-    //             setCount(tasks.length)
-    //         } else if (source === "Guest") {
-
-    //             const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
-    //             const taskMatched = localTasks.filter(task => {
-    //                 if (id === task.category_id) {
-    //                     return task
-    //                 }
-    //             })
-    //             setCount(taskMatched.length);
-    //         }
-    //     } catch (error) {
-    //         console.error(error)
-    //     } finally {
-    //         fetchCategorie();
-    //     };
-    // }
-
     const handleDelete = async (e) => {
         e.preventDefault();
 
@@ -92,7 +64,7 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
                 if (!response.ok) {
                     throw new Error(data.message || `Erreur ${response.status}`);
                 }
-                sendMessage({ type: "DELETED_CATEGORY", payload : data})
+                sendMessage({ type: "DELETED_CATEGORY", payload: data })
                 console.log('✅ Supprimé avec succès');
 
             } else if (data.source === "Guest") {
@@ -115,46 +87,38 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
         e.preventDefault();
 
         try {
-            const response = await fetch(`http://localhost:3001/api/categories/${categorie._id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, created_at }),
-                credentials: "include"
-            })
+            if (!user) {
+                const oldStorageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
+                const currentCategorie = oldStorageCategorie.filter(cat => cat._id === categorie._id);
+                const categoryModified = { ...currentCategorie[0], name: name, description: description, updated_at: Date.now() };
+                const newCategory = [...oldStorageCategorie.filter(cat => cat._id !== categorie._id), categoryModified];
+                localStorage.setItem("defaultCategorie", JSON.stringify(newCategory));
+            }
 
-            const data = await response.json();
-            console.log('Réponse serveur:', data);
+            if (user) {
+                const response = await fetch(`http://localhost:3001/api/categories/${categorie._id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, created_at }),
+                    credentials: "include"
+                })
 
-            if (data.source === "db") {
+                const data = await response.json();
+                console.log('Réponse serveur:', data);
+                
+
                 if (!response.ok) {
                     throw new Error("Erreur")
                 }
 
                 sendMessage({
                     type: "UPDATE_CATEGORY",
-                    payload:data,
+                    payload: data,
                     sessionId: "abc123"
                 })
-
-            } else if (data.source === "Guest") {
-
-                const oldStorageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"))
-
-                const newStorage = oldStorageCategorie.map(element => {
-                    if (element._id === categorie._id) {
-                        return {
-                            ...element,
-                            name: data.updatedCategorie.name,
-                            description: data.updatedCategorie.description,
-                            owner: data.updatedCategorie.owner,
-                            created_at: data.updatedCategorie.created_at,
-                            updated_at: data.updatedCategorie.updated_at
-                        }
-                    }
-                    return element
-                })
-                localStorage.setItem("defaultCategorie", JSON.stringify(newStorage))
             }
+
+
         } catch (err) {
             console.error(err)
         } finally {

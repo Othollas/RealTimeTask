@@ -69,7 +69,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
             if (!ObjectId.isValid(req.params.id)) {
                 return res.status(400).json({ message: 'ID invalide' });
             }
-
+            const deletedCategorie = await Category.findOne({ _id: new ObjectId(req.params.id )})
             const result = await Category.deleteOne({ _id: new ObjectId(req.params.id) });
 
             console.log('Résultat suppression:', result);
@@ -81,7 +81,8 @@ router.delete("/:id", verifyToken, async (req, res) => {
             res.json({
                 message: 'Catégorie supprimée avec succès',
                 deletedCount: result.deletedCount,
-                source: "db"
+                source: "db",
+                deletedCategory : deletedCategorie
             });
         } else {
             res.json({ source: "Guest" })
@@ -102,6 +103,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 
 
         const updatedCategorie = {
+            _id: req.params.id,
             name: name,
             description: description == '' ? null : description,
             owner: owner || null,
@@ -110,6 +112,7 @@ router.put("/:id", verifyToken, async (req, res) => {
         };
 
         if (req.user) {
+            const oldCategory = await Category.findOne({ _id :  new ObjectId(req.params.id)});
             const result = await Category.replaceOne({ _id: new ObjectId(req.params.id) }, updatedCategorie);
 
             if (!result.acknowledged) {
@@ -118,21 +121,11 @@ router.put("/:id", verifyToken, async (req, res) => {
 
             res.json({
                 message: 'Categorie modifié avec succés',
-                modifiedCount: result.modifiedCount,
-                source: "db"
+                oldName: oldCategory.name,
+                updatedCategory: updatedCategorie,
+                modifiedCount: result.modifiedCount
             });
-        } else {
-
-            res.json({
-                updatedCategorie: updatedCategorie,
-                source: "Guest"
-            })
         }
-
-
-
-
-
     } catch (err) {
         res.status(500).json({ message: err.message })
     };
