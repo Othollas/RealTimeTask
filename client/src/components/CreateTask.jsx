@@ -1,41 +1,63 @@
 import { useState } from "react";
+import { sendMessage } from "../service/webSocketService";
+import generateId from "../function";
 
 
-const AddTask = ({ fetchTasks, id_category }) => {
+const AddTask = ({ fetchTasks, id_category, user }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [title, setTitle] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [description, setDescription] = useState('');
 
-    const resetInputTask = () =>{
-                setTitle('');
-                setDescription('');
-                setIsAdding(false);
+    const newTask = {
+        _id: generateId(),
+        title: title,
+        description: description != '' ? description : null,
+        category_id: id_category,
+        created_at: new Date().toString(),
+        updated_at: new Date().toString(),
+        completed: false,
+        recovery_time: null,
+        point: null
+    }
+
+    const resetInputTask = () => {
+        setTitle('');
+        setDescription('');
+        setIsAdding(false);
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            //exemple de rêquete POST avec fetch
-            const response = await fetch('http://localhost:3001/api/tasks', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, id_category }),
-                credentials: "include"
-            });
 
-            const data = await response.json();
-
-            if (response.ok && data.source === "db") {
-                //Reinitialiser les champs et revenir au bouton initial
-                resetInputTask();
-            } else if(data.source === "Guest"){
+            if (!user) {
                 const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
-                const newLocalTasks = [...localTasks, data.newTask];
+                const newLocalTasks = [...localTasks, newTask];
                 localStorage.setItem("defaultTasks", JSON.stringify(newLocalTasks));
                 resetInputTask();
-            }else{
+            }
+
+            if (user) {
+                //exemple de rêquete POST avec fetch
+                const response = await fetch('http://localhost:3001/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, id_category }),
+                    credentials: "include"
+                });
+
+                const data = await response.json();
+                console.log(data.result.title)
+                if (response.ok) {
+                    
+                    //Reinitialiser les champs et revenir au bouton initial
+                    sendMessage({ type: "CREATE_TASK", payload: data.result });
+                    
+                    resetInputTask();
+                }
+            } else {
                 throw new Error("Echec de L'envoi")
             }
         } catch (err) {

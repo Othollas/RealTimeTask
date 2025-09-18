@@ -5,12 +5,12 @@ import { useState } from "react";
 
 
 
-const CategoriePage = () => {
+const CategoriePage = ({tasks, setTasks, user}) => {
 
     const params = useParams();
 
 
-const [tasks, setTasks] = useState([]);
+
 const [error, setError] = useState(null);
 
     const fetchTasks = async () => {
@@ -40,7 +40,7 @@ const [error, setError] = useState(null);
     return (
         <div className="text-center my-5">
             <h1>Pages</h1>
-            <TaskList  tasks={tasks} fetchTasks={fetchTasks} />
+            <TaskList  tasks={tasks} fetchTasks={fetchTasks} user={user} />
             <Link to="/" className="btn btn-danger">Retour</Link>
         </div>
     );

@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import TaskCard from "./TaskCard";
 import AddTask from "./CreateTask";
 
-const TaskList = ({ tasks, fetchTasks }) => {
+const TaskList = ({ tasks, fetchTasks, user }) => {
 
 
     // Récupération des taches
@@ -22,9 +22,9 @@ const TaskList = ({ tasks, fetchTasks }) => {
             <p>l'id de la categorie est : {cat_id}</p>
             <div>
                 {tasks.map(task =>
-                    <TaskCard key={task._id} task={task} fetchTasks={fetchTasks} />)}
+                    <TaskCard key={task._id} task={task} fetchTasks={fetchTasks} user={user} />)}
             </div>
-            <AddTask id_category={cat_id} fetchTasks={fetchTasks} />
+            <AddTask id_category={cat_id} fetchTasks={fetchTasks} user={user}/>
         </div>
     )
 }

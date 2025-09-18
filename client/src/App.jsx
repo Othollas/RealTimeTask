@@ -40,7 +40,7 @@ function App() {
 
   }, [])
 
-
+// useEffect pour confirmer l'authentification du l'user
   useEffect(() => {
 
     if (user) {
@@ -59,6 +59,7 @@ function App() {
     }
   }, [user])
 
+// Souscription à l'eventBus pour la creation de CATEGORIE
   useEffect(() => {
 
     // Abonnement création 
@@ -73,6 +74,7 @@ function App() {
     return () => unsubCreate();
   }, [])
 
+// Souscription à l'eventBus pour la creation de TASK
   useEffect(() => {
 
     // Abonnement création 
@@ -87,25 +89,49 @@ function App() {
     return () => unsubCreate();
   }, [])
 
-
+// Souscription à l'eventBus pour la suppression de CATEGORIE
   useEffect(() => {
     const unsubDeleted = EventBus.subscribe("DELETED_CATEGORY", (deletedCat) => {
       console.log("[CategoriesHome] Catégorie reçue via Eventbus :", deletedCat)
       setCategories(prev => prev.filter(category => category._id !== deletedCat.deletedCategory._id));
-      console.log("Suppresion Categorie : ", deletedCat)
+      toastService.show('Catégorie supprimé', 'danger')
     });
 
     return () => unsubDeleted();
   }, [])
 
-
+// Souscription à l'eventBus pour la modification de CATEGORIE
   useEffect(() => {
     const unsubModify = EventBus.subscribe("UPDATE_CATEGORY", (modifiedCat) => {
       console.log("[CategoriesHome] Caégorie reçu via Eventbus :", modifiedCat);
-      setCategories(prev => prev.map(category => category._id === modifiedCat.updatedCategory._id ? modifiedCat.updatedCategory : category))
+      setCategories(prev => prev.map(category => category._id === modifiedCat.updatedCategory._id ? modifiedCat.updatedCategory : category));
+      toastService.show(`categorie "${modifiedCat.oldName}" modifié en "${modifiedCat.updatedCategory.name}"`, 'info')
     });
 
     return () => unsubModify();
+  }, [])
+
+// Souscription à li'eventBus pour la modification de TASK
+  useEffect(() => {
+    const unsubModify = EventBus.subscribe("UPDATE_TASK", (modifiedTask) => {
+      console.log("[TaskHome] Tâche reçu via Eventbus :", modifiedTask);
+      setTasks(prev => prev.map(task => task._id === modifiedTask._id ? modifiedTask : task));
+      toastService.show('Tâche modifé', 'info')
+    });
+
+    return () => unsubModify();
+  }, [])
+
+// Souscription à l'eventBus pour la suppression de TASK
+  useEffect(() => {
+    const unsubDeleted = EventBus.subscribe("DELETED_TASK", (deletedTask) => {
+      console.log("[TasksHome] Tâche reçue via Eventbus :", deletedTask)
+
+      setTasks(prev => prev.filter(task => task._id !== deletedTask._id));
+      toastService.show('Tâche supprimé', 'primary')
+    });
+
+    return () => unsubDeleted();
   }, [])
 
 

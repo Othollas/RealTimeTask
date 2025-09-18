@@ -1,5 +1,6 @@
 import express from 'express';
 import Task from '../schemas/taskSchema.js';
+import Category from "../schemas/categorieSchema.js";
 import { ObjectId } from "mongodb";
 import verifyToken, { generateId } from '../function.js';
 
@@ -43,6 +44,7 @@ router.post("/", verifyToken, async (req, res) => {
                 updated_at: new Date(),
             }
 
+            const resultCategory = await Category
             const result = await Task.insertOne(newTask);
             res.status(201).json({ result, source: "db" });
         } else {
@@ -57,7 +59,7 @@ router.post("/", verifyToken, async (req, res) => {
                 recovery_time: null,
                 point: null
             }
-            res.json({ newTask, source: "Guest" });
+            res.json({ newTask });
         }
 
     } catch (err) {
@@ -68,7 +70,7 @@ router.post("/", verifyToken, async (req, res) => {
 
 router.delete("/:id", verifyToken, async (req, res) => {
     try {
-
+        
         if (req.user) {
 
             if (!ObjectId.isValid(req.params.id)) {
@@ -76,20 +78,20 @@ router.delete("/:id", verifyToken, async (req, res) => {
             };
             const id = new ObjectId(req.params.id);
 
+            const taskToDelete = await Task.findOne({ _id: id })
             const result = await Task.deleteOne({ _id: id });
 
             if (result.deletedCount === 0) {
                 return res.status(404).json({ message: 'Catégorie non trouvée' });
             };
 
+            
+
             res.json({
                 message: 'Tâche supprimée avec succès',
                 deletedCount: result.deletedCount,
-                source: "db"
+                deletedTask : taskToDelete
             });
-        } else if (!req.user) {
-            const id = req.params.id
-            res.json({ id: id, source: "Guest" })
         }
 
     } catch (error) {
@@ -100,7 +102,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, description, created_at, category_id } = req.body;
+        const { title, description, created_at } = req.body;
 
 
         if (req.user) {
@@ -110,37 +112,19 @@ router.put("/:id", verifyToken, async (req, res) => {
                 created_at: new Date(created_at),
                 updated_at: new Date()
             };
-
+            const oldData = await Task.findById({ _id: new ObjectId(id) }).lean();
             const result = await Task.updateOne({ _id: new ObjectId(id) }, newData);
 
             if (!result.acknowledged) {
                 return res.status(404).json({ message: "tache non trouvé" })
             };
-
+       
             res.json({
                 message: "Bravo tu as reussi",
                 modificatedCount: result.modifiedCount,
-                source: "db"
+                updatedTask : {...oldData, title: newData.title, description: newData.description, created_at: newData.created_at, updated_at: newData.updated_at }
             });
-        } else if (!req.user) {
-            const newData = {
-                _id: id,
-                title: title,
-                description: description == '' ? null : description,
-                category_id,
-                created_at: new Date(created_at),
-                updated_at: new Date(),
-                recovery_time: null,
-                point: null
-            };
-
-            res.json({
-                taskModify: newData,
-                source: "Guest"
-            })
         }
-
-
     } catch (err) {
         res.status(500).json({ message: err.message })
     };
