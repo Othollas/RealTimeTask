@@ -2,7 +2,6 @@ const subscribers = {};
 
 export const EventBus = {
     subscribe(event, callback) {
-        console.log(subscribers)
         if(!subscribers[event]) subscribers[event] = [];
         subscribers[event].push(callback);
 
