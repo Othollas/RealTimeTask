@@ -12,6 +12,7 @@ import { connectSocket } from './service/webSocketService';
 import { EventBus } from './service/bus';
 import { toastService } from './service/toastService';
 import GlobalToast from './components/GlobalToast';
+import MonCompte from './pages/MonCompte';
 
 
 
@@ -143,6 +144,7 @@ function App() {
         <Route path="/login" element={<Login onLogin={setUser} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/categorie/:id" element={<CategoriePage user={user} tasks={tasks} setTasks={setTasks} />} />
+        <Route path="/MonCompte" element={<MonCompte user={user} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <GlobalToast/>
