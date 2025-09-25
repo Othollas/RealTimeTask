@@ -10,6 +10,7 @@ import categoriesRouter from "./routes/categories.js";
 import tasksRouter from "./routes/tasks.js";
 import authRouter from "./routes/auth.js";
 import verifyToken, { verifyTokenWS } from "./function.js";
+import group from "./routes/group.js";
 
 const app = express();
 const PORT = 3001;
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/categories/", categoriesRouter);
 app.use("/api/tasks", tasksRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/group", group);
 
 
 // je crée le serveur HTTP autour d'express

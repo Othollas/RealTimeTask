@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/", verifyToken, async (req, res) => {
     try {
 
-
+        
         const categories = await Category.find();
 
         if (req.user) {
