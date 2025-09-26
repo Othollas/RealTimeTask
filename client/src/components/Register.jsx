@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { register } from "../api/auth";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [error, setError] = useState(false);
@@ -8,6 +9,7 @@ const Register = () => {
     const [passwordVerify, setPasswordVerify] = useState('');
     const [email, setEmail] = useState('');
     const [responseMessage, setResponseMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -21,18 +23,21 @@ const Register = () => {
         if (password !== passwordVerify) {
             setError(true);
         }
-      
+
         const data = { username: cleanUsername, email: cleanEmail, password: cleanPassword };
 
 
 
         if (!error) {
 
-         const response = await register(data);
+            const response = await register(data);
             setResponseMessage(response.message)
             console.log(response.ok)
-            if(response.ok){ setError(''), setUsername(''), setEmail(''), setPassword(''), setPasswordVerify('')}
-            setTimeout(()=>{setResponseMessage('') }, 2000)
+            if (response.ok) { setError(''), setUsername(''), setEmail(''), setPassword(''), setPasswordVerify('') }
+            setTimeout(() => {
+                setResponseMessage('');
+                navigate("/", {replace:true});
+            }, 2000)
         }
     }
 

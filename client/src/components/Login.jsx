@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { login } from "../api/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 const Login = ({ onLogin }) => {
@@ -47,9 +47,15 @@ const Login = ({ onLogin }) => {
                         <div className="my-5 row">
                             <label className="col-4" htmlFor="password">password</label>
                             <input className="col-8" type="text" name="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                           
                         </div>
+                        <div className="m-5 d-block">
+                            <Link to={"/register"}> pas encore enregistrer ? </Link>
+                        </div>
+                        
                         {error && <p style={{ color: "red" }}>Tu as une erreur</p>}
-                        <button type="submit" className="my-5 btn btn-success" >Envoyer</button>
+                        
+                        <button type="submit" className="my-5 mt-5 btn btn-success" >Envoyer</button>
                     </div>
                 </form>
             </div>
