@@ -21,7 +21,8 @@ function App() {
   const [user, setUser] = useState(false) //user = {info, token}
   const [categories, setCategories] = useState([]);
   const [tasks, setTasks] = useState([]);
-
+  const [loading, setLoading] = useState(true);
+ 
 
   useEffect(() => {
     fetch("http://localhost:3001/api/auth/me", {
@@ -38,6 +39,8 @@ function App() {
           console.log("user pas connecté")
         }
       })
+      .catch(()=>setUser(false))
+      .finally(()=> setLoading(false))
 
   }, [])
 
@@ -144,7 +147,7 @@ function App() {
         <Route path="/login" element={<Login onLogin={setUser} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/categorie/:id" element={<CategoriePage user={user} tasks={tasks} setTasks={setTasks} />} />
-        <Route path="/MonCompte" element={<MonCompte user={user} />} />
+        <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <GlobalToast/>
