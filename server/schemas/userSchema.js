@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 1,
-        maxlength: 255,
+        maxlength: 100,
         unique: true
     },
     email: {
@@ -32,7 +32,11 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: true,
         default: Date.now
-    }
+    },
+     groups: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Group"
+    },
 })
 
 const User = mongoose.model("User", userSchema);
