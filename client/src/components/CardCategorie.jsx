@@ -1,3 +1,45 @@
+/**
+ * Composant CardCategorie
+ * 
+ * Rôle :
+ * Gère l'affichage de la categorie / sert de template / Gère la modification et la suppression des categories selon si l'user est connecté ou non
+ * 
+ * Entrée :
+ * - categorie, fetchcategorie (state) et user (boolean)
+ * 
+ * Sorties / Effets
+ * -Affiche la CARD categorie, et affiche les bouton necessaire dynamiquement
+ * - Supprime la categorie quand demandé
+ */
+
+/**
+ * 
+ * Composant CardCategorie
+ * 
+ * Rôle :
+ * Affiche une carte représentant une catégorie et permet sa modification ou suppression selon si l'utilisateur est connecté, sert de template pour chaque catégorie.
+ *  
+ * 
+ * Entrées (props) :
+ *  - catégorie object {_id, name, description, created_at } representant la categorie
+ *  - fetchCategiorie : fonction pour recharger la liste des catégories aprés modification/suppression
+ *  - user : boolean indiquand si l'utilisateur est connecté
+ * 
+ * Sorties / Effets :
+ *  - Affiche dynamiquement les bouton Modifier/ Supprimer selon l'état
+ *  - Met à jour le nombre de tâches associées à la catégorie
+ *  - Supprime ou modifie la catégorie dans la BDD ou localStorage
+ *  - Envoie des messages via webSocket pour notoifier d'autre client
+ * 
+ * TODO / FIXME : 
+ *  - Ajouter gestion d'erreurs et retour utilisateur plus clair
+ *  - Retirer les console.log en production
+ *  - Ajouter validation des champs avant modification
+ *  - Modifier la fonction handleModify pour inclure l'user et ne pas faire d'appel API pour rien
+ */
+
+
+
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import img from "/vite.svg?url"
@@ -8,6 +50,7 @@ import { sendMessage } from '../service/webSocketService';
 
 
 const CardCategorie = ({ categorie, fetchCategorie, user }) => {
+    // State locaux : nombre de tâches, mode modification, nom et description modifiables
     const [count, setCount] = useState(0);
     const [isModify, setIsModify] = useState(false);
     const [name, setName] = useState(categorie.name);
@@ -15,11 +58,24 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
     const created_at = categorie.created_at;
 
 
+    //-----------------------------
+    // Hook : récupération du nombre de tâches
+    //-----------------------------
+
+    // Recuperation du nombre de tache dans la categorie au montage
     useEffect(() => {
         getTaskCount(categorie._id)
     }, [])
 
 
+    /**
+     * 
+     * @param {String} id - ID de la catégorie 
+     * 
+     * BRANCHES :
+     *  - utilisateur non connecté -> récupère depuis localStorage
+     *  - utilisateur connecté -> Récuper depuis L'API
+     */
     const getTaskCount = async (id) => {
 
         try {
@@ -30,7 +86,7 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
             }
             if (user) {
                 const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
-                    credentials: "include"
+                    credentials: "include" // inclut les cookies/session
                 });
                 const data = await response.json();
                 const { tasks } = await data;
@@ -41,33 +97,34 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
         } catch (error) {
             console.error(error)
         } finally {
-            fetchCategorie();
+            fetchCategorie(); // Rafraîchit la liste parent
         };
     }
 
 
+    //-----------------------------
+    // Fonction de suppresion de catégorie
+    //----------------------------- 
     const handleDelete = async (e) => {
         e.preventDefault();
 
         try {
             const response = await fetch(`http://localhost:3001/api/categories/${categorie._id}`, {
                 method: "DELETE",
-                credentials: "include"
+                credentials: "include" // inlcut les cookies / session
             });
 
             const data = await response.json();
 
             if (data.source === "db") {
-
                 console.log('Réponse serveur:', data);
-
                 if (!response.ok) {
                     throw new Error(data.message || `Erreur ${response.status}`);
                 }
                 sendMessage({ type: "DELETED_CATEGORY", payload: data })
                 console.log('✅ Supprimé avec succès');
-
             } else if (data.source === "Guest") {
+                 // suppression côté client (localStorage)
                 const storageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
                 const newStorage = storageCategorie.filter(element => {
                     return element._id !== categorie._id;
@@ -79,15 +136,20 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
         } catch (err) {
             console.error('Erreur:', err);
         } finally {
-            fetchCategorie();
+            fetchCategorie(); // rafraîchit la liste parent
         }
     };
 
+
+   // ---------------------------
+    // Fonction de modification de catégorie
+    // ---------------------------
     const handleModify = async (e) => {
         e.preventDefault();
 
         try {
             if (!user) {
+                // modification côté localStorage
                 const oldStorageCategorie = JSON.parse(localStorage.getItem("defaultCategorie"));
                 const currentCategorie = oldStorageCategorie.filter(cat => cat._id === categorie._id);
                 const categoryModified = { ...currentCategorie[0], name: name, description: description, updated_at: Date.now() };
@@ -102,13 +164,10 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
                     body: JSON.stringify({ name, description, created_at }),
                     credentials: "include"
                 })
-
                 const data = await response.json();
-                console.log('Réponse serveur:', data);
-                
-
+                console.log('Réponse serveur:', data); // TODO: retirer console.log
                 if (!response.ok) {
-                    throw new Error("Erreur")
+                    throw new Error("Erreur") 
                 }
 
                 sendMessage({
@@ -117,16 +176,18 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
                     sessionId: "abc123"
                 })
             }
-
-
         } catch (err) {
-            console.error(err)
+            console.error("Erreur handleModify:", err) // TODO: retour utilisateur
         } finally {
-            setIsModify(false);
+            setIsModify(false); 
             fetchCategorie();
-        }
+        };
     }
 
+
+    // ---------------------------
+    // JSX : affichage de la carte
+    // ---------------------------
 
     return (
         <Card className="shadow" style={{ width: '15rem' }}>
@@ -168,9 +229,7 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
                                     onChange={(e) => setDescription(e.target.value)}
                                 />
                             </div>
-                            {/* <button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Envoi en cours... ' : 'Envoyer'}
-                        </button> */}
+
                             <Button className='m-2' type="submit" variant='primary'>
                                 Envoyer
                             </Button>

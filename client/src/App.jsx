@@ -1,3 +1,21 @@
+/**
+ * Composant App 
+ * 
+ * Rôle : 
+ * Gère l'application principale : routes, authentification, websocket  et Event bus pour les mise à jour en temps réel.
+ * 
+ * Entrée :
+ * -Aucun paramètre externe, toutes les données sont gérées via un UseState et props internes.
+ * 
+ * Sorties / Effets :
+ * -Maintient l'etat global de l'utilisateur (user), des catégories et des tâches
+ * -Vérifie l'authentfication au montage et met à jour user/loading
+ * -Connecte un websocket pour recevoir les message en temps réel
+ * - S'abonne à eventBus pour les CRUD tâches/catégories
+ * -Affiche les notification via toastService
+ * 
+ */
+
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -17,13 +35,13 @@ import MonCompte from './pages/MonCompte';
 
 
 function App() {
-
-  const [user, setUser] = useState(false) //user = {info, token}
+  // Etat utilisateur, categories, tasks, et chargement initial
+  const [user, setUser] = useState(false) // TODO : remplacer false par null pour differencier "non connecté" et "pas encore chargé"
   const [categories, setCategories] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
- 
-
+  
+  // Vérifie l'authentification de l'utilisateur au montage
   useEffect(() => {
     fetch("http://localhost:3001/api/auth/me", {
       method: "GET",
@@ -32,7 +50,7 @@ function App() {
       .then(res => res.json())
       .then(data => {
         if (data.loggedIn) {
-          // console.log("user log", data.user);
+          
           setUser(true);
           toastService.show('Connecté avec succés !', 'success');
         } else {
@@ -44,7 +62,8 @@ function App() {
 
   }, [])
 
-// useEffect pour confirmer l'authentification du l'user
+  
+// Connexion WebSocket si utilisateur connecté
   useEffect(() => {
 
     if (user) {
@@ -62,6 +81,11 @@ function App() {
       return () => ws.close()
     }
   }, [user])
+
+// --------------------------
+// EventBus subscription
+// --------------------------
+
 
 // Souscription à l'eventBus pour la creation de CATEGORIE
   useEffect(() => {
@@ -81,7 +105,7 @@ function App() {
 // Souscription à l'eventBus pour la creation de TASK
   useEffect(() => {
 
-    // Abonnement création 
+    // Abonnement création tâche
     const unsubCreate = EventBus.subscribe("CREATE_TASK", (newTask) => {
       // console.log("[TaskList] Tâche reçue via EventBus :", newTask);
       setTasks(prev => [...prev, newTask]);
@@ -109,6 +133,7 @@ function App() {
     const unsubModify = EventBus.subscribe("UPDATE_CATEGORY", (modifiedCat) => {
       console.log("[CategoriesHome] Caégorie reçu via Eventbus :", modifiedCat);
       setCategories(prev => prev.map(category => category._id === modifiedCat.updatedCategory._id ? modifiedCat.updatedCategory : category));
+      
       toastService.show(`categorie "${modifiedCat.oldName}" modifié en "${modifiedCat.updatedCategory.name}"`, 'info')
     });
 
@@ -139,6 +164,10 @@ function App() {
   }, [])
 
 
+// --------------------------
+// Route
+// --------------------------
+
   return (
 
     <BrowserRouter>
@@ -150,10 +179,16 @@ function App() {
         <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <GlobalToast/>
+      {/* GlobalToast gère tout les toast, mis ici pour etre sur dispo sur toutes les routes */}
+      <GlobalToast/> 
     </BrowserRouter>
 
   )
 }
 
 export default App
+
+
+// TODO : différencier false et null pour l’état user.
+// TODO : améliorer la gestion des erreurs WebSocket.
+// TODO : retirer tous les console.log en production.
