@@ -8,7 +8,7 @@
  * - categorie, fetchcategorie (state) et user (boolean)
  * 
  * Sorties / Effets
- * -Affiche la CARD categorie, et affiche les bouton necessaire dynamiquement
+ * - Affiche la CARD categorie, et affiche les bouton necessaire dynamiquement
  * - Supprime la categorie quand demandé
  */
 
@@ -103,7 +103,7 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
 
 
     //-----------------------------
-    // Fonction de suppresion de catégorie
+    // Fonction de suppression de catégorie
     //----------------------------- 
     const handleDelete = async (e) => {
         e.preventDefault();

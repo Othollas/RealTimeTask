@@ -1,6 +1,26 @@
+/**
+ *  Composant GlobalToast
+ * 
+ * Rôle : 
+ * Affiche des notifications globales (toasts) émise via toastService.
+ * 
+ * Entrées : aucune (abonnement à toastService)
+ * Sorties / Effets :
+ *  - Met à jour la liste des toasts à afficher
+ *  - Retire autimatiquement un toast à afficher 
+ *  - Permet la fermeture manuelle d'un toast 
+ * 
+ * TODO / FIXME :
+ *  - Ajouter animation de disparition plus fluide
+ *  - Configuration duréee d'affichage
+ * 
+ */
+
 import { useEffect, useState } from 'react'
 import { Toast, ToastContainer } from 'react-bootstrap'
 import { toastService } from '../service/toastService';
+
+const DEFAULT_DURATION = 3000;
 
 const GlobalToast = () => {
     // Définition du state local pour sotcker les toasts à afficher 
@@ -16,7 +36,7 @@ const GlobalToast = () => {
             // setTimeout afin de faire disparaitre le toast automatiquement
             setTimeout(() => {
                 setToasts(prev => prev.filter(t => t.id !== toast.id))
-            }, 3000)
+            }, toast.duration || DEFAULT_DURATION)
         }
 
         // Abonnement au service toast
@@ -27,7 +47,7 @@ const GlobalToast = () => {
     }, []); // tableau vide == s'execute qu'une seule fois au mount 
 
     return (
-        // Conteneur bootstrap pour les toats
+        // Conteneur bootstrap pour les toasts
         <ToastContainer position='top-end' className='p-3'>
             {/* Mapping de tous les toasts vers des composants Toast */}
             {toasts.map(toast => (
@@ -35,15 +55,18 @@ const GlobalToast = () => {
                     key={toast.id} // Clé unique pour react
                     show={true} // Toujours visible (hors timeout)
                     bg={toast.type} // Couleur de fond selon le type
-                    onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))} // CallBack quand l'utilisateur clique sur la croix, efface le toast du tableau de
+                    onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))} // CallBack quand l'utilisateur clique sur la croix, efface le toast du tableau
+                    role="alert"
+                    className="mb-2" // espace entre toasts empilés
                 >
                     {/* 17. En-tête du toast */}
                     <Toast.Header>
                         <strong className="me-auto">
                             {/* 18. Emoji selon le type de toast */}
-                            {toast.type === 'success' && '✅ '}
-                            {toast.type === 'danger' && '❌ '}
-                            {toast.type === 'warning' && '⚠️ '}
+                            {toast.type === 'success' && '✅'}
+                            {toast.type === 'danger' && '❌'}
+                            {toast.type === 'warning' && '⚠️'}
+                            {toast.type === 'info' && 'ℹ️'}
                             Notification
                         </strong>
                     </Toast.Header>
