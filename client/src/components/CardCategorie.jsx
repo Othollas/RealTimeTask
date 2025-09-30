@@ -46,7 +46,7 @@ import img from "/vite.svg?url"
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sendMessage } from '../service/webSocketService';
-
+import { EventBus } from "../service/bus"
 
 
 const CardCategorie = ({ categorie, fetchCategorie, user }) => {
@@ -65,6 +65,24 @@ const CardCategorie = ({ categorie, fetchCategorie, user }) => {
     // Recuperation du nombre de tache dans la categorie au montage
     useEffect(() => {
         getTaskCount(categorie._id)
+    }, [])
+
+    
+    useEffect(()=>{
+            // Abonnement création tâche
+    const unsubCreate = EventBus.subscribe("CREATE_TASK", () => {
+      getTaskCount(categorie._id); // permet de mettre à jour le compte de tâche dans les catégories quand un utilisateur du même groupe en crée une 
+    });
+
+    return () => unsubCreate();
+    }, [])
+
+    useEffect(()=>{
+        const unsubDeleted = EventBus.subscribe("DELETED_TASK", ()=>{
+            getTaskCount(categorie._id);
+        })
+
+        return ()=> unsubDeleted()
     }, [])
 
 
