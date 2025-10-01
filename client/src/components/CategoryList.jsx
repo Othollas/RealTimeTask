@@ -2,7 +2,7 @@
  * Composant CategoryList
  * 
  * Rôle : 
- * Affiche la liste des categories reçue depuis la fcontion fetchCategorie.
+ * Affiche la liste des categories reçue depuis la fontion fetchCategorie.
  * Mappe chaque catégorie  dans le composant CardCategorie
  * Affiche dynamiquemeent le bouton Logout si l'utilisateur est connecté 
  * 
