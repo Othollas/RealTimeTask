@@ -1,8 +1,29 @@
+/**
+ * Composant Register
+ * 
+ * Rôle : 
+ * Utilise le formulaire d'inscripton pour envoyer les donnée à l'API 'register' 
+ * Affiche les messages de retours (erreur ou succès) puis redirige vers l'acceuil (ou vers login à voir en production)
+ * 
+ * Entrées :
+ *  - Aucune (le composant est autonome)
+ * 
+ * Sorties / Effets :
+ *  - Appelle l'API d'inscription
+ *  - Met à jour les états locaux : champs, erreurs, messages
+ *  - Redirige vers "/" aprés succès
+ * 
+ */
+
+
+
 import { useState } from "react";
 import { register } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
+
+    // State locaux
     const [error, setError] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -11,9 +32,18 @@ const Register = () => {
     const [responseMessage, setResponseMessage] = useState('');
     const navigate = useNavigate();
 
+
+    /**
+     * Soumission du formulaire
+     * - Vérifie les champs et la correspondance des mots de passe
+     * - Nettoie les inputs (trim / lowercase email)
+     * - Envoie la requête d'inscription à l'API
+     * - Affiche le message retour et redirige après succès
+     */
     const handleSubmit = async (e) => {
         e.preventDefault()
 
+        // Validation minimale
         !username || username === '' ? setError(true) : setError(false);
 
         const cleanUsername = username.trim();
@@ -32,15 +62,23 @@ const Register = () => {
 
             const response = await register(data);
             setResponseMessage(response.message)
-            console.log(response.ok)
-            if (response.ok) { setError(''), setUsername(''), setEmail(''), setPassword(''), setPasswordVerify('') }
+
+            console.log(response.ok) // TODO : retirer en production
+
+            if (response.ok) { setError(''), setUsername(''), setEmail(''), setPassword(''), setPasswordVerify('') };
+
+            // Nettoyer message et rediriger après 2s
             setTimeout(() => {
                 setResponseMessage('');
-                navigate("/", {replace:true});
+                navigate("/", { replace: true });
             }, 2000)
         }
-    }
+    };
 
+
+    // -------------------
+    // Rendu JSX
+    // -------------------
     return (
         <>
             <div className="container d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>

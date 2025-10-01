@@ -1,3 +1,23 @@
+/**
+ * Composant TaskCard
+ * 
+ * Rôle :
+ *  - Affiche une tâche avec ses info (titre, description, dates)
+ *  - Permet de modifier, compléter ou supprimer la tâche 
+ *  - Supporte les deux modes :
+ *      - Si utilisateur connécté alors recupération depuis la BDD (API backend)
+ *      - Si utilsateur non connecté alors recuperation depuis le localStorage
+ * 
+ * Entrées (Props) :
+ *  - task {object} : Données de la tâche {_id, title, description, created_at, updated_at}
+ *  - fetchTasks {Function} : recharge la liste aprés moification/suppression
+ *  - user {boolean} : indique si l'utilisateur est connecté
+ * 
+ * Effets :
+ *  - Envoi de requêtes API ou mise à jour du localStorage
+ *  - Envoi de message via webSocket (sendMessage)
+ */
+
 import Button from 'react-bootstrap/Button';
 import { useState } from 'react';
 import Card from 'react-bootstrap/Card';
@@ -7,6 +27,8 @@ import Task from '../../../server/schemas/taskSchema';
 
 
 function TaskCard({ task, fetchTasks, user }) {
+
+  // States locaux
   const [isModify, setIsModify] = useState(false);
   const [isCompleted, setIsCompleted] = useState(task.completed);
   const [title, setTtitle] = useState(task.title || "");
@@ -26,17 +48,22 @@ function TaskCard({ task, fetchTasks, user }) {
     setDescription(task.description);
   }
 
+
+  // -------------------
+  // Suppression d’une tâche
+  // -------------------
   const handleDelete = async () => {
     try {
 
       if (!user) {
-
+        // Mode invité : suppression locale
         const localTasks = JSON.parse(localStorage.getItem("defaultTasks"));
         const newTasks = localTasks.filter(task => task._id !== taskId);
         localStorage.setItem("defaultTasks", JSON.stringify(newTasks));
       }
 
       if (user) {
+        // Mode connecté : suppression API
         const response = await fetch(`http://localhost:3001/api/tasks/${task._id}`, {
           method: 'DELETE',
           credentials: "include"
@@ -45,7 +72,7 @@ function TaskCard({ task, fetchTasks, user }) {
         const data = await response.json();
         console.log(data)
         sendMessage({ type: "DELETED_TASK", payload: data.deletedTask });
-        
+
         if (!response.ok) {
           throw new Error(data.message || `Erreur ${response.status}`);
         }
@@ -53,24 +80,30 @@ function TaskCard({ task, fetchTasks, user }) {
     } catch (error) {
       console.error(error)
     } finally {
-      fetchTasks();
+      fetchTasks(); // recharge la liste
     }
-  }
+  };
 
+
+  // -------------------
+  // Modification d’une tâche
+  // -------------------
   const handleModify = async (e) => {
     e.preventDefault();
 
 
     try {
       if (!user) {
+        // Mode invité : mise à jour locale
         const localTask = JSON.parse(localStorage.getItem("defaultTasks"));
         const currentTask = localTask.filter(task => task._id === taskId);
-        const newTask = {...currentTask[0], title:title, description:description, updated_at: new Date().toString()}
+        const newTask = { ...currentTask[0], title: title, description: description, updated_at: new Date().toString() }
         const newLocalTask = [...localTask.filter(task => task._id !== newTask._id), newTask]
         localStorage.setItem("defaultTasks", JSON.stringify(newLocalTask));
       }
 
       if (user) {
+        // Mode connecté : mise à jour API
         const response = await fetch(`http://localhost:3001/api/tasks/${task._id}`, {
           method: "PUT",
           headers: { 'Content-Type': 'application/json' },
@@ -94,6 +127,10 @@ function TaskCard({ task, fetchTasks, user }) {
     }
   }
 
+
+  // -------------------
+  // Vue édition
+  // -------------------
   const inputModify = (title, description) => {
 
 
@@ -117,6 +154,9 @@ function TaskCard({ task, fetchTasks, user }) {
   }
 
 
+  // -------------------
+  // Rendu JSX
+  // -------------------
 
   return (
     <div className="border border-warning rounded-2 ps-2 w-75 mx-auto my-4">
