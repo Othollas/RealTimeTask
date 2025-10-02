@@ -1,3 +1,11 @@
+/**
+ * Composant NotFound
+ * 
+ * Rôle :
+ * Permet d'afficher un ecran d'erreur si la route n'est pas trouver 
+ *
+ */
+
 const NotFound = ()=>{
     return (
         <div className="d-flex flex-column justify-content-center align-items-center vh-100 ">

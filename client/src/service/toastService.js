@@ -5,6 +5,7 @@ class ToastService {
         this.listeners = []; // Tableau ou seront stocké les fonctions d'ecoute (listener)
     }
 
+    
     //Methode permetant d'afficher un nouveau toast
     show(message, type = 'success') {
         const toast = {
