@@ -1,3 +1,53 @@
+
+/**
+ * Task API Service
+ * 
+ * Rôle global :
+ *  - Gérer les opérations CRUD sur les tâches (Tasks) liées aux catégories
+ *  - Utiliser `verifyToken` pour sécuriser l'accès aux données utilisateur
+ *  - Fournir des comportements différents selon que l'utilisateur est connecté ou invité (Guest)
+ * 
+ * Routes principales :
+ * 
+ * 1. GET /:id
+ *    - Récupère toutes les tâches d'une catégorie spécifique (via l'ID)
+ *    - Si utilisateur connecté : recherche en base MongoDB
+ *    - Si utilisateur invité : renvoie juste { source: "Guest" }
+ * 
+ * 2. POST /
+ *    - Crée une nouvelle tâche
+ *    - Validation : le champ `title` est obligatoire
+ *    - Si utilisateur connecté : insère dans MongoDB et associe à `id_category`
+ *    - Si utilisateur invité : génère une tâche locale avec un `_id` temporaire via `generateId()`
+ * 
+ * 3. DELETE /:id
+ *    - Supprime une tâche via son ID
+ *    - Vérifie que l'ID est valide
+ *    - Si utilisateur connecté : suppression dans MongoDB
+ *    - Renvoie un message de succès et les données de la tâche supprimée
+ * 
+ * 4. PUT /:id
+ *    - Met à jour une tâche existante
+ *    - Validation de l'ID et des champs
+ *    - Si utilisateur connecté : met à jour MongoDB et renvoie l'ancienne et nouvelle version de la tâche
+ * 
+ * Sécurité et mémoire :
+ *  - Toutes les routes sensibles sont protégées via JWT (`verifyToken`)
+ *  - Les objets temporaires pour les utilisateurs invités sont générés côté serveur mais non persistés
+ *  - Les erreurs serveur sont capturées et renvoyées avec le status HTTP approprié
+ * 
+ * TODO / FIXME :
+ *  - Gérer les invités pour DELETE et PUT ou renvoyer une erreur claire
+ *  - Standardiser les noms des champs (`modificatedCount` → `modifiedCount`)
+ *  - Ajouter des logs plus détaillés pour le suivi des modifications
+ * 
+ * Usage typique :
+ *  GET /tasks/:id → récupère les tâches d’une catégorie
+ *  POST /tasks → crée une tâche
+ *  PUT /tasks/:id → met à jour une tâche
+ *  DELETE /tasks/:id → supprime une tâche
+ */
+
 import express from 'express';
 import Task from '../schemas/taskSchema.js';
 import Category from "../schemas/categorieSchema.js";

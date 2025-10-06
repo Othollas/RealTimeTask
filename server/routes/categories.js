@@ -1,3 +1,55 @@
+/**
+ * Categories API Service
+ * 
+ * Rôle global :
+ *  - Fournir des routes REST pour gérer les catégories
+ *  - Permettre la création, récupération, modification et suppression de catégories
+ *  - Supporter deux modes : utilisateur authentifié (DB) et invité (Guest, stockage local)
+ *  - Utiliser `verifyToken` pour sécuriser les routes côté serveur
+ * 
+ * Routes principales :
+ * 
+ * 1. GET /
+ *    - Récupère toutes les catégories
+ *    - Si l'utilisateur est connecté : renvoie les catégories depuis la base de données et son username
+ *    - Sinon : renvoie les catégories avec username "Invité" et source "Guest"
+ * 
+ * 2. POST /
+ *    - Crée une nouvelle catégorie
+ *    - Validation : le champ `name` est obligatoire
+ *    - Si connecté : insertion dans la base MongoDB
+ *    - Sinon : génération d'un ID local avec `generateId` et renvoi côté Guest
+ * 
+ * 3. DELETE /:id
+ *    - Supprime une catégorie par son ID
+ *    - Vérifie que l'ID est valide
+ *    - Si connecté : supprime depuis la base MongoDB et renvoie l’ancienne catégorie supprimée
+ *    - Si invité : retourne juste `source: "Guest"`
+ * 
+ * 4. PUT /:id
+ *    - Met à jour une catégorie par son ID
+ *    - Conserve la date de création passée et met à jour `updated_at`
+ *    - Si connecté : remplace la catégorie dans la base MongoDB
+ * 
+ * Sécurité et mémoire :
+ *  - Routes sécurisées par `verifyToken`
+ *  - Validation de l’ID pour éviter les erreurs MongoDB
+ *  - Gestion des erreurs avec status HTTP appropriés
+ * 
+ * TODO / FIXME :
+ *  - Ajouter gestion côté Guest pour PUT et DELETE (actuellement seulement GET et POST supportés)
+ *  - Ajouter validation plus stricte des champs côté serveur
+ *  - Centraliser la gestion des erreurs pour éviter répétition de try/catch
+ *  - Vérifier la cohérence des ID côté MongoDB et côté Guest
+ * 
+ * Usage typique :
+ *  - GET /categories → récupérer toutes les catégories
+ *  - POST /categories → créer une catégorie avec {name, description, owner}
+ *  - PUT /categories/:id → mettre à jour une catégorie avec {name, description, owner, created_at}
+ *  - DELETE /categories/:id → supprimer une catégorie par son ID
+ */
+
+
 import express from "express";
 import { ObjectId } from "mongodb";
 import Category from "../schemas/categorieSchema.js";

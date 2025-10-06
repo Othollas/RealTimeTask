@@ -1,3 +1,58 @@
+/**
+ * Authentification API Service
+ * 
+ * Rôle global :
+ *  - Fournir des routes sécurisées pour gérer l'authentification des utilisateurs
+ *  - Permettre la création de compte, la connexion, la vérification de session et la déconnexion
+ *  - Utiliser bcrypt pour le hash des mots de passe et JWT pour la gestion de session
+ * 
+ * Routes principales :
+ * 
+ * 1. POST /register
+ *    - Valide les champs reçus (username, email, password)
+ *    - Hash le mot de passe avec bcrypt
+ *    - Crée un nouvel utilisateur dans la base MongoDB
+ *    - Renvoie les informations de l'utilisateur et un message de succès
+ *    - Gère les erreurs spécifiques :
+ *        - Duplication d'email ou pseudo
+ *        - Erreur de validation de champ
+ *        - Erreur serveur générale
+ * 
+ * 2. POST /login
+ *    - Vérifie si l'email existe et si le mot de passe correspond
+ *    - Génère un token JWT contenant id, username, email et groupe de l'utilisateur
+ *    - Définit le cookie "authToken" pour la session avec des options sécurisées (httpOnly, sameSite, maxAge)
+ *    - Renvoie un message de succès ou d'échec selon l'authentification
+ * 
+ * 3. GET /me
+ *    - Vérifie la présence du cookie "authToken"
+ *    - Décode le JWT pour récupérer les informations utilisateur
+ *    - Renvoie l'état de connexion et les informations utilisateur si valides
+ *    - Sinon, renvoie un statut 401 (non autorisé)
+ * 
+ * 4. POST /logout
+ *    - Supprime le cookie "authToken"
+ *    - Renvoie un message de confirmation de déconnexion
+ * 
+ * Sécurité et mémoire :
+ *  - Les mots de passe ne sont jamais stockés en clair
+ *  - Les tokens JWT contiennent uniquement les informations nécessaires pour l'identification
+ *  - Les cookies httpOnly protègent contre les attaques XSS
+ * 
+ * TODO / FIXME :
+ *  - Ajouter une validation plus stricte des champs côté serveur
+ *  - Ajouter gestion de token expiré côté client pour rediriger vers login
+ *  - Ajouter journalisation ou alertes pour tentatives de connexion suspectes
+ *  - Sécuriser le cookie en production (secure: true) et configurer le domaine
+ * 
+ * Usage typique :
+ *  - POST /register avec {username, email, password} pour créer un compte
+ *  - POST /login avec {email, password} pour obtenir un cookie JWT
+ *  - GET /me pour vérifier l'état de connexion
+ *  - POST /logout pour détruire la session
+ */
+
+
 import express, { Router } from "express";
 import bcrypt from "bcrypt"
 import User from "../schemas/userSchema.js";
@@ -8,8 +63,8 @@ import 'dotenv/config'
 const router = express.Router();
 
 
-const generateToken = (userId, pseudo, userEmail) => {
-    return jwt.sign({ id: userId, username: pseudo, email: userEmail }, process.env.JWT_SECRET, {
+const generateToken = (userId, pseudo, userEmail, userGroup) => {
+    return jwt.sign({ id: userId, username: pseudo, email: userEmail, group : userGroup }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRATION,
     });
 };
@@ -64,8 +119,9 @@ router.post("/login", async (req, res) => {
        
         if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) }
 
-        if(response.groups) {console.log(response.groups)}
-        const token = generateToken(response._id, response.username, response.email);
+        console.log("groupe de l'user", response.groups)
+        // if(response.groups) {console.log(response.groups)}
+        const token = generateToken(response._id, response.username, response.email, response.groups);
 
         res.status(201).cookie("authToken", token, {
             httpOnly: true,
