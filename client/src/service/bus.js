@@ -38,6 +38,5 @@ export const EventBus = {
     publish(event, data) {
         if (!subscribers[event]) return;
         subscribers[event].forEach(cb => cb(data));
-
     }
 };
