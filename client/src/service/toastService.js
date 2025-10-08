@@ -1,4 +1,7 @@
 // Définition d'une classe afin de gerer les toast
+
+import generateId from "../function";
+
 /**
  * ToastService
  * 
@@ -31,11 +34,11 @@ class ToastService {
      */
     show(message, type = 'success') {
         const toast = {
-            id: Date.now(), // ID unique basé sur le timestamp pour identifier chaque toast
+            id: generateId(), // ID unique basé sur mon generateur d'id qui utilise l'objet crypto pour identifier chaque toast
             message, // Message à afficher dnas le toast
             type  // type (succes, danger, warning, info)
         };
-        this.notifyListeners(toast); // Avec cette fontion on notifie qu'un toast est dispo
+        this.notifyListeners(toast); // Avec cette fonction on notifie qu'un toast est dispo
     }
 
 

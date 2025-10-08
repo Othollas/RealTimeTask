@@ -65,9 +65,9 @@ router.get("/", verifyToken, async (req, res) => {
         const categories = await Category.find();
 
         if (req.user) {
-            res.json({ categories: categories, username: req.user.username, source: "db" });
+            res.json({ categories: categories, username: req.user.username });
         } else {
-            res.json({ categories: categories, username: "Invité", source: "Guest" });
+            res.json({ categories: categories, username: "Invité" });
         }
 
 

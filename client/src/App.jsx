@@ -36,8 +36,10 @@ import MonCompte from './pages/MonCompte';
 
 function App() {
   // Etat utilisateur, categories, tasks, et chargement initial
-  const [user, setUser] = useState(false) // TODO : remplacer false par null pour differencier "non connecté" et "pas encore chargé"
+  const [user, setUser] = useState(false); // TODO : remplacer false par null pour différencier "non connecté" et "pas encore chargé"
   const [categories, setCategories] = useState([]);
+  const [isGroup, setIsGroup] = useState(false);
+  const [categorieGroup, setCategorieGroup] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -52,12 +54,13 @@ function App() {
         if (data.loggedIn) {
           
           setUser(true);
+          
           toastService.show('Connecté avec succés !', 'success');
         } else {
           console.log("user pas connecté")
         }
       })
-      .catch(()=>setUser(false))
+      .catch(()=>{setUser(false), setIsGroup(false)})
       .finally(()=> setLoading(false))
 
   }, [])
@@ -65,8 +68,7 @@ function App() {
   
 // Connexion WebSocket si utilisateur connecté
   useEffect(() => {
-
-    if (user) {
+    if (user && isGroup) {
       const ws = connectSocket();
       ws.onmessage = (event) => {
         try {
@@ -172,8 +174,8 @@ function App() {
 
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CategoriesHome user={user} categories={categories} setCategories={setCategories} />} />
-        <Route path="/login" element={<Login onLogin={setUser} />} />
+        <Route path="/" element={<CategoriesHome user={user} categories={categories} setCategories={setCategories} categorieGroup={categorieGroup} setCategorieGroup={setCategorieGroup}/>} />
+        <Route path="/login" element={<Login onLogin={setUser} setCategories={setCategories} setIsGroup={setIsGroup}/>} />
         <Route path="/register" element={<Register />} />
         <Route path="/categorie/:id" element={<CategoriePage user={user} tasks={tasks} setTasks={setTasks} />} />
         <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} />} />

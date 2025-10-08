@@ -71,7 +71,8 @@ console.log(userGroup) // ⚠️ log temporaire à enlever en prod
         <div>
             <h2>MonCompte</h2>
             <p>Nom du groupe : {group ? group : null}</p>
-            <ul>Personne dans le groupe : {userGroup.map(user=> <li>{user.username}</li> )} </ul>
+            {}
+            {/* <ul>Personne dans le groupe : {userGroup.map(user=> <li key={user._id}>{user.username}</li> )} </ul> */}
             <button onClick={()=>navigate("/", {replace:true})}>Acceuil</button>
         </div>
     )

@@ -31,7 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { Toast } from 'bootstrap';
 
 
-const CategoriesHome = ({ user, categories, setCategories }) => {
+const CategoriesHome = ({ user, categories, setCategories, isGroup }) => {
 
 
   const [error, setError] = useState(null);
@@ -43,6 +43,8 @@ const CategoriesHome = ({ user, categories, setCategories }) => {
   useEffect(() => {
     fetchCategorie();
   }, [user]);
+
+
 
   // --------------------------
   // Initialisation des catégories et tâches locales
@@ -92,7 +94,7 @@ const CategoriesHome = ({ user, categories, setCategories }) => {
           method: "GET",
           credentials: "include"
         });
-
+        
         if (!res.ok) throw new Error("Erreur de chargement ")
 
         const data = await res.json();
@@ -115,18 +117,20 @@ const CategoriesHome = ({ user, categories, setCategories }) => {
 
     <div className='text-center'>
       {/* Bouton "Mon compte" si user connecté */}
-      {user ? <button onClick={() => navigate("./moncompte", { replace: true })}>Mon compte</button> : null}
-
+      {user ? <button className='mt-2' onClick={() => navigate("./moncompte", { replace: true })}>Mon compte</button> : null}
+      
       {/* Bouton reset catégories locales si liste vide */}
       {localStorage.getItem("defaultCategorie") === '[]' && <Button className='m-2' type="submit" variant='primary' onClick={initializeCategorie} >Reset les categories</Button>}
 
       {/* Bouton login si non connecté */}
       {!user && <Button 
-      className='mt-2' 
+      className='mt-2'
       variant="primary" 
       onClick={() => { navigate("/login") }}>
         login
         </Button>}
+       
+       
 
        {/* Liste des catégories */}
       <CategoryList 

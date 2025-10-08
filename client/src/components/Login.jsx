@@ -31,7 +31,7 @@ import { login } from "../api/auth";
 import { Link, useNavigate } from "react-router-dom";
 
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, setCategories, setIsGroup }) => {
     // Gestion des states du formulaire 
     const navigate = useNavigate();
     const [error, setError] = useState(false);
@@ -65,12 +65,14 @@ const Login = ({ onLogin }) => {
                 result.find ? console.log("login reussi", result) : console.log("login raté", result);
             
                 if (result.find) { 
+                    if(result.group) setIsGroup(true); // Si l'utilisateur 
                     onLogin(true); // informe l'app que l'utilisateur est connecté
+                    setCategories([]) // reset les catégories pour eviter l'erreur quand on passe de localstorage à bdd
                     navigate("/", { replace: true }) // redirection accueil
                 }else{
                     setError(true);
                 } 
- 
+                
             } catch (error) {
                 console.error("Erreur :", error.message);
             }

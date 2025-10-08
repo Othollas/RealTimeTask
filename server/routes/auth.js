@@ -113,22 +113,28 @@ router.post("/login", async (req, res) => {
 
     try {
         const { email, password } = req.body;
-        const searchEmail = email.toLowerCase()
+        const searchEmail = email.toLowerCase();
 
-        const response = await User.findOne({ email: searchEmail })
+        const response = await User.findOne({ email: searchEmail });
        
         if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) }
 
         console.log("groupe de l'user", response.groups)
         // if(response.groups) {console.log(response.groups)}
+
+        // on Genere le token qui 
+
+
         const token = generateToken(response._id, response.username, response.email, response.groups);
+
+        const isGroup = response.groups ? true : false;
 
         res.status(201).cookie("authToken", token, {
             httpOnly: true,
             secure: false, 
             sameSite: "Strict",
             maxAge: 3600000,
-        }).json({ message: "Identifiant valide", find: true})
+        }).json({ message: "Identifiant valide", find: true, group: isGroup})
 
 
 

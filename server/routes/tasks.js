@@ -94,7 +94,7 @@ router.post("/", verifyToken, async (req, res) => {
                 updated_at: new Date(),
             }
 
-            const resultCategory = await Category
+            
             const result = await Task.insertOne(newTask);
             res.status(201).json({ result, source: "db" });
         } else {
