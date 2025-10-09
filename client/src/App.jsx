@@ -53,6 +53,7 @@ function App() {
       .then(data => {
         if (data.loggedIn) {
           
+          data.user.group ? setIsGroup(true) : setIsGroup(false);
           setUser(true);
           
           toastService.show('Connecté avec succés !', 'success');
@@ -178,7 +179,7 @@ function App() {
         <Route path="/login" element={<Login onLogin={setUser} setCategories={setCategories} setIsGroup={setIsGroup}/>} />
         <Route path="/register" element={<Register />} />
         <Route path="/categorie/:id" element={<CategoriePage user={user} tasks={tasks} setTasks={setTasks} />} />
-        <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} />} />
+        <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} setIsGroup={setIsGroup} isGroup={isGroup}/>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {/* GlobalToast gère tout les toast, mis ici pour etre sur dispo sur toutes les routes */}
