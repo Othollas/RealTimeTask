@@ -42,14 +42,19 @@ const router = express.Router();
 
 router.get("/", verifyToken, async (req, res) => {
 
+
+     console.log(req.user.id)
     try {
         // ici le populate prend en compte la clé groups dans le schema User et non le schema Group
         const titleGroup = await User.findById(req.user.id).populate("groups");
 
-        // Ici je récupere toute les données des users, à termes, n'envoyer que les champs nécessaire
-        const usersGroup = await User.find({ groups: titleGroup.groups._id });
+        if (titleGroup.groups) {
+            const usersGroup = await User.find({ groups: titleGroup.groups._id });
 
-        res.json({ titre_groupe: titleGroup.groups.group_name, nom_groupe: usersGroup });
+            res.json({ titre_groupe: titleGroup.groups.group_name, nom_groupe: usersGroup });
+        }
+        // Ici je récupere toute les données des users, à termes, n'envoyer que les champs nécessaire
+
     } catch (error) {
         console.error(error)
     }
@@ -57,7 +62,37 @@ router.get("/", verifyToken, async (req, res) => {
 
 })
 
+router.post("/", verifyToken, async (req, res) => {
 
+    // recuperation de l'id de l'user et du nom du groupe
+    const {nameGroup} = req.body;
+    const idUser = req.user.id;
+    
+    console.log("le nom du groupe est :", idUser )
+
+    
+
+    try {
+        // verifier si le nom n'existe pas et retouner une res si elle existe !
+        const existingName = await Group.findOne({ group_name : nameGroup});
+
+        if(existingName) {
+            res.status(400).json({message : "le nom existe deja"})
+        }
+
+        // creation du nouveau groupe avec l'id et le name
+
+
+        // save du group
+
+        
+        // mettre à jour l'user avec le nom du group
+
+        console.log(req.body)
+    } catch (error) {
+        console.error(error)
+    }
+})
 
 
 export default router;

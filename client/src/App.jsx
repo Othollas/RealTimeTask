@@ -45,7 +45,9 @@ function App() {
   
   // Vérifie l'authentification de l'utilisateur au montage
   useEffect(() => {
-    fetch("http://localhost:3001/api/auth/me", {
+
+    
+fetch("http://localhost:3001/api/auth/me", {
       method: "GET",
       credentials: "include"
     })
@@ -54,6 +56,7 @@ function App() {
         if (data.loggedIn) {
           
           data.user.group ? setIsGroup(true) : setIsGroup(false);
+          console.log()
           setUser(true);
           
           toastService.show('Connecté avec succés !', 'success');
@@ -63,6 +66,8 @@ function App() {
       })
       .catch(()=>{setUser(false), setIsGroup(false)})
       .finally(()=> setLoading(false))
+ 
+    
 
   }, [])
 

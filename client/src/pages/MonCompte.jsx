@@ -18,6 +18,7 @@
 import { Error } from "mongoose";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FormGroup from "../components/FormGroup";
 
 const MonCompte = ({ user, loading, isGroup }) => {
 
@@ -46,17 +47,19 @@ const MonCompte = ({ user, loading, isGroup }) => {
 
     // au montage du composant, recuperation  des info du groupe
     useEffect(() => {
+        console.log("🔄 useEffect [] executé");
         fetchGroup();
+
     }, [])
 
     useEffect(() => {
         !isGroup && !loading ? setButtonGroup(true) : setButtonGroup(false)
-    }, [isGroup])
+    }, [isGroup, loading])
 
     // Fonction pour récupérer les données du groupe depuis l'API 
     const fetchGroup = async () => {
         // Fetch pour récuperer les groupe (ou les personnes dans le groupe pour les afficher )
-        fetch("http://localhost:3001/api/group", {
+       await fetch("http://localhost:3001/api/group", {
             credentials: "include", // Pour inclure les cookies/Session
             method: "GET"
         })
@@ -87,16 +90,32 @@ const MonCompte = ({ user, loading, isGroup }) => {
 
         <div>
             <h2>MonCompte</h2>
+
             {group ?
 
-                (<div className="m-5"><p>Nom du groupe</p> <p> {group}</p></div>) :
-                (<div className="m-5"><p>Vous n'avez pas de groupe, en crée un ? </p> <button className="btn btn-warning" onClick={null}>Crée un groupe</button></div>)
+                (
+                    <div className="m-5">
+                        <p>Nom du groupe</p>
+                        <p> {group}</p>
+                    </div>
+                )
+
+                :
+
+                (
+                    <div className="m-5">
+                        <p>Vous n'avez pas de groupe, en crée un ? </p>
+                        <button className="btn btn-warning" onClick={() => setFormNewGoup(!formNewgroup)}>Crée un groupe</button>
+                    </div>
+                )
             }
+
+            {formNewgroup && <FormGroup />}
 
             {buttonGroup && <button onClick={handleFormGroup}>Ajouter au groupe</button>}
 
             {group ?
-                (<ul>Personne dans le groupe :  <div className="list-group"> {userGroup.map(user => <div key={user._id} className="container d-flex"> <a href="#" className="list-group-item list-group-item-action" >{user.username}  <button className="btn btn-danger" >suprimer</button> <button className="btn btn-warning" >modifier</button></a></div> )} </div></ul>)
+                (<ul>Personne dans le groupe :  <div className="list-group"> {userGroup.map(user => <div key={user._id} className="container d-flex"> <a href="#" className="list-group-item list-group-item-action" >{user.username}  <button className="btn btn-danger" >suprimer</button> <button className="btn btn-warning" >modifier</button></a></div>)} </div></ul>)
                 :
                 (null)
             }

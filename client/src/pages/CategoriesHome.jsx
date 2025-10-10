@@ -31,7 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { Toast } from 'bootstrap';
 
 
-const CategoriesHome = ({ user, categories, setCategories, isGroup }) => {
+const CategoriesHome = ({ user, categories, setCategories }) => {
 
 
   const [error, setError] = useState(null);
