@@ -18,7 +18,7 @@ const handleSubmit = async (e)=>{
 
  const data = await response.json()
 
-        console.log(data.message)
+        console.log(data)
 
      
     } catch (error) {
