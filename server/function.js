@@ -49,8 +49,8 @@ import jwt from "jsonwebtoken";
 import 'dotenv/config'
 
 export const generateId = () => {
-    return crypto.randomUUID(); // Génère des UUID v4 vraiment uniques
-    // return Date.now().toString(36) + Math.random().toString().substring(2, 9)
+    // return crypto.randomUUID(); // Génère des UUID v4 vraiment uniques
+    return Date.now().toString(36) + Math.random().toString().substring(2, 9);
 }
 
 const verifyToken = (req, res, next) => {

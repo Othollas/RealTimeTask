@@ -12,7 +12,7 @@
  * Sorties / Effets : 
  * -Navigue vers "/" (accueil) si l'utilisateur n'est pas connecté
  * -Récupère via fetch les infos groupe et liste de membres
- * - Met à jour l'etat local : group (nom du groupe), userGroup (liste de membre) 
+ * - Met à jour l'etat local : groupName (nom du groupe), userGroup (liste de membre) 
  */
 
 import { Error } from "mongoose";
@@ -23,7 +23,9 @@ import FormGroup from "../components/FormGroup";
 const MonCompte = ({ user, loading, isGroup }) => {
 
     // State local : titre du groupe de l'utilisateur 
-    const [group, setGroup] = useState(false);
+    const [groupName, setGroupName] = useState('');
+
+    const [objectGroup, setObjectGroup] = useState({});
 
     // State local pour controler le bouton d'ajout de groupe
     const [buttonGroup, setButtonGroup] = useState(false);
@@ -59,7 +61,7 @@ const MonCompte = ({ user, loading, isGroup }) => {
     // Fonction pour récupérer les données du groupe depuis l'API 
     const fetchGroup = async () => {
         // Fetch pour récuperer les groupe (ou les personnes dans le groupe pour les afficher )
-       await fetch("http://localhost:3001/api/group", {
+        await fetch("http://localhost:3001/api/group", {
             credentials: "include", // Pour inclure les cookies/Session
             method: "GET"
         })
@@ -69,19 +71,38 @@ const MonCompte = ({ user, loading, isGroup }) => {
             })
             .then(data => {
                 // Met à jour l'état avec les données reçues
-                setGroup(data.titre_groupe); // Nom du groupe
+                setGroupName(data.infoGroupe.groups.group_name); // Nom du groupe
                 setUserGroup(data.nom_groupe); // Liste des utilisateurs
+                setObjectGroup(data.infoGroupe.groups) // stocke l'objet group pour recuperer l'id du groupe
             })
             .catch(err => {
                 console.error("Erreur fetchGroup", err)
-            })
+
+            }).finally(() => setFormNewGoup(false))
     }
 
-    // fonction pour afficher le formulaire de creation de groupe
-    const handleFormGroup = () => {
-        setButtonGroup(false);
-        setFormNewGoup(true);
+    const deletedGroup = async () => {
+        console.log(objectGroup)
+        try {
+            const response = await fetch(`http://localhost:3001/api/group/${objectGroup._id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+            console.log(data);
+        } catch (error) {
+            console.error(error)
+        }
     }
+
+
+
+    // fonction pour afficher le formulaire de creation de groupe
+    //    const handleFormGroup = () => {
+    //         setButtonGroup(false);
+    //         setFormNewGoup(true);
+    //     }
 
     // formulaire de 
 
@@ -90,31 +111,33 @@ const MonCompte = ({ user, loading, isGroup }) => {
 
         <div>
             <h2>MonCompte</h2>
+            <div className="d-flex ">
+                {groupName ?
 
-            {group ?
+                    (
+                        <div className="m-5">
+                            <p>Nom du groupe</p>
+                            <p> {groupName}</p>
+                        </div>
+                    )
 
-                (
-                    <div className="m-5">
-                        <p>Nom du groupe</p>
-                        <p> {group}</p>
-                    </div>
-                )
+                    :
 
-                :
+                    (
+                        <div className="m-5">
+                            <p>Vous n'avez pas de groupe, en crée un ? </p>
+                            <button className="btn btn-warning" onClick={() => setFormNewGoup(!formNewgroup)}>Crée un groupe</button>
+                        </div>
+                    )
+                }
 
-                (
-                    <div className="m-5">
-                        <p>Vous n'avez pas de groupe, en crée un ? </p>
-                        <button className="btn btn-warning" onClick={() => setFormNewGoup(!formNewgroup)}>Crée un groupe</button>
-                    </div>
-                )
-            }
 
-            {formNewgroup && <FormGroup />}
+                {formNewgroup && <FormGroup fetchGroup={fetchGroup} />}
+                {isGroup && <button className="btn btn-danger" onClick={deletedGroup}>Supprimer le groupe</button>}
+            </div>
+            {/* {buttonGroup && <button onClick={handleFormGroup}  setFormNewGoup={setFormNewGoup}>Ajouter au groupe</button>} */}
 
-            {buttonGroup && <button onClick={handleFormGroup}>Ajouter au groupe</button>}
-
-            {group ?
+            {groupName ?
                 (<ul>Personne dans le groupe :  <div className="list-group"> {userGroup.map(user => <div key={user._id} className="container d-flex"> <a href="#" className="list-group-item list-group-item-action" >{user.username}  <button className="btn btn-danger" >suprimer</button> <button className="btn btn-warning" >modifier</button></a></div>)} </div></ul>)
                 :
                 (null)
