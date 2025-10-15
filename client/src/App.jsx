@@ -42,37 +42,31 @@ function App() {
   const [categorieGroup, setCategorieGroup] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Vérifie l'authentification de l'utilisateur au montage
   useEffect(() => {
-
-    
-fetch("http://localhost:3001/api/auth/me", {
+    fetch("http://localhost:3001/api/auth/me", {
       method: "GET",
       credentials: "include"
     })
       .then(res => res.json())
       .then(data => {
         if (data.loggedIn) {
-          
-          data.user.group ? setIsGroup(true) : setIsGroup(false);
-          console.log()
           setUser(true);
-          
+
           toastService.show('Connecté avec succés !', 'success');
         } else {
           console.log("user pas connecté")
         }
       })
-      .catch(()=>{setUser(false), setIsGroup(false)})
-      .finally(()=> setLoading(false))
- 
-    
+      .catch(() => { setUser(false), setIsGroup(false) })
+      .finally(() => setLoading(false))
+
 
   }, [])
 
-  
-// Connexion WebSocket si utilisateur connecté
+
+  // Connexion WebSocket si utilisateur connecté
   useEffect(() => {
     if (user && isGroup) {
       const ws = connectSocket();
@@ -88,14 +82,20 @@ fetch("http://localhost:3001/api/auth/me", {
       }
       return () => ws.close()
     }
-  }, [user])
-
-// --------------------------
-// EventBus subscription
-// --------------------------
+  }, [user, isGroup])
 
 
-// Souscription à l'eventBus pour la creation de CATEGORIE
+  // useEffect afin de modifier ou nonle groupe
+  useEffect(() => {
+    userHasGroup();
+  }, [])
+
+  // --------------------------
+  // EventBus subscription
+  // --------------------------
+
+
+  // Souscription à l'eventBus pour la creation de CATEGORIE
   useEffect(() => {
 
     // Abonnement création 
@@ -110,7 +110,7 @@ fetch("http://localhost:3001/api/auth/me", {
     return () => unsubCreate();
   }, [])
 
-// Souscription à l'eventBus pour la creation de TASK
+  // Souscription à l'eventBus pour la creation de TASK
   useEffect(() => {
 
     // Abonnement création tâche
@@ -125,7 +125,7 @@ fetch("http://localhost:3001/api/auth/me", {
     return () => unsubCreate();
   }, [])
 
-// Souscription à l'eventBus pour la suppression de CATEGORIE
+  // Souscription à l'eventBus pour la suppression de CATEGORIE
   useEffect(() => {
     const unsubDeleted = EventBus.subscribe("DELETED_CATEGORY", (deletedCat) => {
       console.log("[CategoriesHome] Catégorie reçue via Eventbus :", deletedCat)
@@ -136,19 +136,19 @@ fetch("http://localhost:3001/api/auth/me", {
     return () => unsubDeleted();
   }, [])
 
-// Souscription à l'eventBus pour la modification de CATEGORIE
+  // Souscription à l'eventBus pour la modification de CATEGORIE
   useEffect(() => {
     const unsubModify = EventBus.subscribe("UPDATE_CATEGORY", (modifiedCat) => {
       console.log("[CategoriesHome] Caégorie reçu via Eventbus :", modifiedCat);
       setCategories(prev => prev.map(category => category._id === modifiedCat.updatedCategory._id ? modifiedCat.updatedCategory : category));
-      
+
       toastService.show(`categorie "${modifiedCat.oldName}" modifié en "${modifiedCat.updatedCategory.name}"`, 'info')
     });
 
     return () => unsubModify();
   }, [])
 
-// Souscription à li'eventBus pour la modification de TASK
+  // Souscription à l'eventBus pour la modification de TASK
   useEffect(() => {
     const unsubModify = EventBus.subscribe("UPDATE_TASK", (modifiedTask) => {
       console.log("[TaskHome] Tâche reçu via Eventbus :", modifiedTask);
@@ -159,7 +159,7 @@ fetch("http://localhost:3001/api/auth/me", {
     return () => unsubModify();
   }, [])
 
-// Souscription à l'eventBus pour la suppression de TASK
+  // Souscription à l'eventBus pour la suppression de TASK
   useEffect(() => {
     const unsubDeleted = EventBus.subscribe("DELETED_TASK", (deletedTask) => {
       console.log("[TasksHome] Tâche reçue via Eventbus :", deletedTask)
@@ -171,24 +171,46 @@ fetch("http://localhost:3001/api/auth/me", {
     return () => unsubDeleted();
   }, [])
 
+  // fonction pour savoir si l'user est dans un groupe, je l'utilise au montage du composant
+  const userHasGroup = async () => {
+    try {
+      const response = await fetch("http://localhost:3001/api/group", {
+        method: "GET",
+        credentials: 'include'
+      });
 
-// --------------------------
-// Route
-// --------------------------
+      const data = await response.json();
+
+      console.log(data);
+
+      if (data) {
+        setIsGroup(true);
+        console.log("l'utilisateur à un groupe");
+      }
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
+  // --------------------------
+  // Route
+  // --------------------------
 
   return (
 
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CategoriesHome user={user} categories={categories} setCategories={setCategories} categorieGroup={categorieGroup} setCategorieGroup={setCategorieGroup}/>} />
-        <Route path="/login" element={<Login onLogin={setUser} setCategories={setCategories} setIsGroup={setIsGroup}/>} />
+        <Route path="/" element={<CategoriesHome user={user} categories={categories} setCategories={setCategories} categorieGroup={categorieGroup} setCategorieGroup={setCategorieGroup} />} />
+        <Route path="/login" element={<Login onLogin={setUser} setCategories={setCategories} setIsGroup={setIsGroup} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/categorie/:id" element={<CategoriePage user={user} tasks={tasks} setTasks={setTasks} />} />
-        <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} setIsGroup={setIsGroup} isGroup={isGroup}/>} />
+        <Route path="/MonCompte" element={<MonCompte user={user} loading={loading} setIsGroup={setIsGroup} isGroup={isGroup} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {/* GlobalToast gère tout les toast, mis ici pour etre sur dispo sur toutes les routes */}
-      <GlobalToast/> 
+      <GlobalToast />
     </BrowserRouter>
 
   )

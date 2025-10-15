@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const FormGroup = ({fetchGroup}) => {
+const FormGroup = ({fetchGroup, setIsGroup}) => {
 
     const [nameGroup, setNameGroup] = useState('');
     const navigate = useNavigate();
@@ -22,6 +22,7 @@ const FormGroup = ({fetchGroup}) => {
 
             if(data.validate){
                 setNameGroup('');
+                setIsGroup(true);
                 fetchGroup();
                 navigate("/moncompte", { replace: true });
 

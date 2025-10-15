@@ -65,8 +65,8 @@ const Login = ({ onLogin, setCategories, setIsGroup }) => {
                 result.find ? console.log("login reussi", result) : console.log("login raté", result);
             
                 if (result.find) { 
-                    console.log(result.group);
-                    if(result.group) setIsGroup(true); // Si l'utilisateur 
+                    
+                    if(result.group) setIsGroup(true); // Si l'utilisateur à un groupe
                     onLogin(true); // informe l'app que l'utilisateur est connecté
                     setCategories([]) // reset les catégories pour eviter l'erreur quand on passe de localstorage à bdd
                     navigate("/", { replace: true }) // redirection accueil

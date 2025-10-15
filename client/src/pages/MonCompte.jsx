@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FormGroup from "../components/FormGroup";
 
-const MonCompte = ({ user, loading, isGroup }) => {
+const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
 
     // State local : titre du groupe de l'utilisateur 
     const [groupName, setGroupName] = useState('');
@@ -67,7 +67,7 @@ const MonCompte = ({ user, loading, isGroup }) => {
         })
             .then((res) => {
                 if (!res.ok) { throw new Error("erreur dans la demande du titre") }
-                return res.json()
+                return res.json({message : "demande du titre ?"})
             })
             .then(data => {
                 // Met à jour l'état avec les données reçues
@@ -78,11 +78,11 @@ const MonCompte = ({ user, loading, isGroup }) => {
             .catch(err => {
                 console.error("Erreur fetchGroup", err)
 
-            }).finally(() => setFormNewGoup(false))
+            }).finally(setFormNewGoup(false))
     }
 
     const deletedGroup = async () => {
-        console.log(objectGroup)
+       
         try {
             const response = await fetch(`http://localhost:3001/api/group/${objectGroup._id}`, {
                 method: "DELETE",
@@ -90,9 +90,15 @@ const MonCompte = ({ user, loading, isGroup }) => {
             });
 
             const data = await response.json();
-            console.log(data);
+
+            if(data.valid){
+                setIsGroup(false)
+                setGroupName('')
+            }
         } catch (error) {
             console.error(error)
+        } finally {
+            fetchGroup();
         }
     }
 
@@ -132,8 +138,8 @@ const MonCompte = ({ user, loading, isGroup }) => {
                 }
 
 
-                {formNewgroup && <FormGroup fetchGroup={fetchGroup} />}
-                {isGroup && <button className="btn btn-danger" onClick={deletedGroup}>Supprimer le groupe</button>}
+                {formNewgroup && <FormGroup fetchGroup={fetchGroup} setIsGroup={setIsGroup} />}
+                {isGroup  && <button className="btn btn-danger" onClick={deletedGroup}>Supprimer le groupe</button>}
             </div>
             {/* {buttonGroup && <button onClick={handleFormGroup}  setFormNewGoup={setFormNewGoup}>Ajouter au groupe</button>} */}
 
