@@ -15,10 +15,11 @@
  * - Met à jour l'etat local : groupName (nom du groupe), userGroup (liste de membre) 
  */
 
-import { Error } from "mongoose";
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FormGroup from "../components/FormGroup";
+import FormNewMember from "../components/FormNewMember";
 
 const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
 
@@ -27,13 +28,21 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
 
     const [objectGroup, setObjectGroup] = useState({});
 
-    // State local pour controler le bouton d'ajout de groupe
-    const [buttonGroup, setButtonGroup] = useState(false);
+
+
+    const [error, setError] = useState({})
 
     // State local afin de controle le formulaire d'ajout du groupe
     const [formNewgroup, setFormNewGoup] = useState(false);
+
+
     // State local : Groupe de l'utilisateur 
     const [userGroup, setUserGroup] = useState([]);
+
+    // State local pour controler l'input d'ajout de nouveau membre
+    const [inputNewMember, setInputNewMember] = useState(false);
+
+
     const navigate = useNavigate();
 
 
@@ -55,8 +64,11 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
     }, [])
 
     useEffect(() => {
-        !isGroup && !loading ? setButtonGroup(true) : setButtonGroup(false)
+        !isGroup ? setInputNewMember(false) : null;
+        
     }, [isGroup, loading])
+
+
 
     // Fonction pour récupérer les données du groupe depuis l'API 
     const fetchGroup = async () => {
@@ -67,12 +79,14 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
         })
             .then((res) => {
                 if (!res.ok) { throw new Error("erreur dans la demande du titre") }
-                return res.json({message : "demande du titre ?"})
+                return res.json({ message: "demande du titre ?" })
             })
             .then(data => {
+
+
                 // Met à jour l'état avec les données reçues
                 setGroupName(data.infoGroupe.groups.group_name); // Nom du groupe
-                setUserGroup(data.nom_groupe); // Liste des utilisateurs
+                setUserGroup(data.user_in_group); // Liste des utilisateurs (filtrer dans le serveur)
                 setObjectGroup(data.infoGroupe.groups) // stocke l'objet group pour recuperer l'id du groupe
             })
             .catch(err => {
@@ -82,7 +96,7 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
     }
 
     const deletedGroup = async () => {
-       
+
         try {
             const response = await fetch(`http://localhost:3001/api/group/${objectGroup._id}`, {
                 method: "DELETE",
@@ -91,7 +105,7 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
 
             const data = await response.json();
 
-            if(data.valid){
+            if (data.valid) {
                 setIsGroup(false)
                 setGroupName('')
             }
@@ -104,18 +118,13 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
 
 
 
-    // fonction pour afficher le formulaire de creation de groupe
-    //    const handleFormGroup = () => {
-    //         setButtonGroup(false);
-    //         setFormNewGoup(true);
-    //     }
-
-    // formulaire de 
+    // formulaire
 
 
     return (
-
+        
         <div>
+            {console.log()}
             <h2>MonCompte</h2>
             <div className="d-flex ">
                 {groupName ?
@@ -139,17 +148,28 @@ const MonCompte = ({ user, loading, isGroup, setIsGroup }) => {
 
 
                 {formNewgroup && <FormGroup fetchGroup={fetchGroup} setIsGroup={setIsGroup} />}
-                {isGroup  && <button className="btn btn-danger" onClick={deletedGroup}>Supprimer le groupe</button>}
+                {isGroup && <button className="btn btn-danger" onClick={deletedGroup}>Supprimer le groupe</button>}
             </div>
-            {/* {buttonGroup && <button onClick={handleFormGroup}  setFormNewGoup={setFormNewGoup}>Ajouter au groupe</button>} */}
 
-            {groupName ?
-                (<ul>Personne dans le groupe :  <div className="list-group"> {userGroup.map(user => <div key={user._id} className="container d-flex"> <a href="#" className="list-group-item list-group-item-action" >{user.username}  <button className="btn btn-danger" >suprimer</button> <button className="btn btn-warning" >modifier</button></a></div>)} </div></ul>)
-                :
-                (null)
+
+            {console.log()}
+            {
+                userGroup.length ?
+                    (<ul>Personne dans le groupe :  <div className="list-group"> {userGroup.map(user => <div key={user._id} className="container d-flex"> <a href="#" className="list-group-item list-group-item-action" >{user.username}  <button className="btn btn-danger" >suprimer</button> <button className="btn btn-warning" >modifier</button></a></div>)} </div></ul>)
+                    :
+                    (null)
             }
 
-            <button className="btn btn-info m-5" onClick={() => navigate("/", { replace: true })}>Acceuil</button>
+            {
+                isGroup &&
+                <div>
+                    {<><label htmlFor="nameFre">Ajouter une personne</label> <button id="nameFre" name="nameFre" onClick={() => setInputNewMember((!inputNewMember))} className="btn btn-info">{inputNewMember ? "-" : "+"}</button></>}
+                    {(inputNewMember) && <FormNewMember setError={setError} />}
+                    {Object.keys(error).length > 0 && <p> ${error.error} </p>}
+                </div>
+            }
+
+            <button className="btn btn-info m-5" onClick={() => navigate("/", { replace: true })}>Home</button>
         </div>
     )
 

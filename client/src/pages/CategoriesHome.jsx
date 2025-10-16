@@ -29,9 +29,10 @@ import taskTemplate from '../template/taskTemplate';
 import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom';
 import { Toast } from 'bootstrap';
+import Logout from '../components/Logout';
 
 
-const CategoriesHome = ({ user, categories, setCategories }) => {
+const CategoriesHome = ({ user, categories, setCategories, setIsGroup }) => {
 
 
   const [error, setError] = useState(null);
@@ -130,7 +131,7 @@ const CategoriesHome = ({ user, categories, setCategories }) => {
         login
         </Button>}
        
-       
+         {user && <Logout setIsGroup={setIsGroup}/>}
 
        {/* Liste des catégories */}
       <CategoryList 

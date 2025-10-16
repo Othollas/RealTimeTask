@@ -60,17 +60,25 @@ router.get("/", verifyToken, async (req, res) => {
         const infoGroup = await User.findById(req.user.id).populate("groups");
 
         if (infoGroup.groups) {
+            // recuperation des users
             const usersGroup = await User.find({ groups: infoGroup.groups._id });
 
-            res.json({ infoGroupe: infoGroup, nom_groupe: usersGroup });
+            // filtrage afin de ne pas se renvoyer soit meme.
+            const otherUser = usersGroup.filter(user=> req.user.id != user._id);
+
+            // resolution avec 
+            res.json({ infoGroupe: infoGroup, user_in_group: otherUser });
         };
 
         // Ici je récupere toute les données des users, à termes, n'envoyer que les champs nécessaire
 
     } catch (error) {
+
         console.error(error)
     }
-})
+});
+
+
 
 router.post("/", verifyToken, async (req, res) => {
 
@@ -108,7 +116,22 @@ router.post("/", verifyToken, async (req, res) => {
     } catch (error) {
         console.error("merde il y a une erreur ", error)
     }
-})
+});
+
+
+router.post("/member", verifyToken, async (req, res)=>{
+    console.log(req.body.nameMember);
+
+    const query = await User.findOne({ username : req.body.nameMember})
+
+    if(query){
+        console.log(query.groups)
+    }
+   
+
+    res.json({result : query})
+
+});
 
 
 router.delete("/:id", verifyToken, async (req, res) => {
@@ -124,7 +147,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
         const valid = await Group.findById(req.params.id).populate('id_admin');
 
         // const deleted_group = await Group.findOne({ _id: ObjectId(req.params.id)})
-        
+
 
 
         if (!valid) throw new Error("erreur dans la suppression duu groupe");
@@ -133,8 +156,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
         if (valid.id_admin.is_admin === true && valid.id_admin._id == req.user.id) {
             // je supprime le document du groupe
-            await Group.findByIdAndDelete(req.params.id)
+            const deleted_group = await Group.findByIdAndDelete(req.params.id)
 
+            console.log(deleted_group);
             // je supprime les informations dans mon user 
             const user = await User.findById(req.user.id);
 
@@ -142,12 +166,13 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
             user.set('groups', undefined); // ou null
             user.markModified('groups');
-            
+
 
             console.log(user)
-            //    await user.save()
-            
+            await user.save()
+
             // et je renvois un json contenant des info pou faire un fetch !! 
+            return res.status(201).json({ status: "deleted", valid: true, el_deleted: deleted_group });
         }
 
         // modification des informations de luser pour supprimer le groupe et pour enlever is_admin 
@@ -157,7 +182,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     } catch (error) {
         console.error("il y a une couille dans le potage ", error)
     }
-})
+});
 
 
 router.put("/:id", verifyToken, async (req, res) => {

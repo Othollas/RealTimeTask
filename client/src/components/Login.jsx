@@ -63,10 +63,10 @@ const Login = ({ onLogin, setCategories, setIsGroup }) => {
 
                 // L'API renvoie une clé "find" si l'utilisateur existe
                 result.find ? console.log("login reussi", result) : console.log("login raté", result);
-            
+                
                 if (result.find) { 
-                    
-                    if(result.group) setIsGroup(true); // Si l'utilisateur à un groupe
+                    console.log(result)
+                    if(result.isGroup) setIsGroup(true); // Si l'utilisateur à un groupe
                     onLogin(true); // informe l'app que l'utilisateur est connecté
                     setCategories([]) // reset les catégories pour eviter l'erreur quand on passe de localstorage à bdd
                     navigate("/", { replace: true }) // redirection accueil

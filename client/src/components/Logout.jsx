@@ -18,7 +18,7 @@
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api/auth"
 
-const Logout = () => {
+const Logout = ({setIsGroup}) => {
 
    const navigate = useNavigate();
 
@@ -36,6 +36,7 @@ const Logout = () => {
          console.log(data.message) // TODO : à retirer en production
 
          if (data) {
+            setIsGroup(false);
             navigate("/login", { replace: true })
          }
       } catch (err) {

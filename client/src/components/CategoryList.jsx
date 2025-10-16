@@ -45,7 +45,7 @@ export default function CategoryList({ categories, fetchCategorie, username, use
         <div className="text-center">
             <h2 className="m-5">Catégories</h2>
             <p>Bienvenue {username}</p>
-            {user && <Logout />}
+          
 
             <Container>
                 <Row className="gap-3 justify-content-center">

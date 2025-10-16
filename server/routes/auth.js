@@ -117,24 +117,24 @@ router.post("/login", async (req, res) => {
 
         const response = await User.findOne({ email: searchEmail });
        
-        if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) }
-
-        console.log("groupe de l'user", response.groups)
-        // if(response.groups) {console.log(response.groups)}
-
-        // on Genere le token qui 
+        if (!response || !(await bcrypt.compare(password, response.password))) {return res.status(401).json({ message: "Identifiant invalide", find: false}) };
 
 
-        const token = generateToken(response._id, response.username, response.email, response.groups);
+        // Creation d'un econditionelle afin de renvoyer un boolean pour le group 
+        let group;
+        console.log(response.groups)
+        response.groups ? group = true : group = false;
 
-        const isGroup = response.groups ? true : false;
+        // on Genere le token qui sera renvoyé.
+        const token = generateToken(response._id, response.username, response.email);
+
 
         res.status(201).cookie("authToken", token, {
             httpOnly: true,
             secure: false, 
             sameSite: "Strict",
             maxAge: 3600000,
-        }).json({ message: "Identifiant valide", find: true, group: isGroup})
+        }).json({ message: "Identifiant valide", find: true, isGroup : group})
 
 
 

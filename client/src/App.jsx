@@ -63,7 +63,7 @@ function App() {
       .finally(() => setLoading(false))
 
 
-  }, [])
+  }, [user])
 
 
   // Connexion WebSocket si utilisateur connecté
@@ -85,10 +85,10 @@ function App() {
   }, [user, isGroup])
 
 
-  // useEffect afin de modifier ou nonle groupe
+  // useEffect afin de modifier ou non le groupe
   useEffect(() => {
     userHasGroup();
-  }, [])
+  }, [user])
 
   // --------------------------
   // EventBus subscription
@@ -202,7 +202,7 @@ function App() {
 
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CategoriesHome user={user} categories={categories} setCategories={setCategories} categorieGroup={categorieGroup} setCategorieGroup={setCategorieGroup} />} />
+        <Route path="/" element={<CategoriesHome user={user} categories={categories} setCategories={setCategories} categorieGroup={categorieGroup} setCategorieGroup={setCategorieGroup} setIsGroup={setIsGroup}/>} />
         <Route path="/login" element={<Login onLogin={setUser} setCategories={setCategories} setIsGroup={setIsGroup} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/categorie/:id" element={<CategoriePage user={user} tasks={tasks} setTasks={setTasks} />} />
