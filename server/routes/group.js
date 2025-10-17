@@ -64,7 +64,7 @@ router.get("/", verifyToken, async (req, res) => {
             const usersGroup = await User.find({ groups: infoGroup.groups._id });
 
             // filtrage afin de ne pas se renvoyer soit meme.
-            const otherUser = usersGroup.filter(user=> req.user.id != user._id);
+            const otherUser = usersGroup.filter(user => req.user.id != user._id);
 
             // resolution avec 
             res.json({ infoGroupe: infoGroup, user_in_group: otherUser });
@@ -119,17 +119,22 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 
-router.post("/member", verifyToken, async (req, res)=>{
+router.post("/member", verifyToken, async (req, res) => {
     console.log(req.body.nameMember);
 
-    const query = await User.findOne({ username : req.body.nameMember})
+    const query = await User.findOne({ username: req.body.nameMember })
 
-    if(query){
-        console.log(query.groups)
+    console.log(query._id)
+
+    if (query.groups) {
+        return res.status(401).json({ message: "l'utilisateur à deja un groupe" })
     }
-   
 
-    res.json({result : query})
+    const response = await User.findByIdAndUpdate(query._id, { groups: req.body.idGroup })
+
+
+
+    res.json({ result: response })
 
 });
 
@@ -155,23 +160,38 @@ router.delete("/:id", verifyToken, async (req, res) => {
         // suppression du groupe 
 
         if (valid.id_admin.is_admin === true && valid.id_admin._id == req.user.id) {
-            // je supprime le document du groupe
+
+            // je recherche tout les users qui sont dans le group 
+
+            const findUser = await User.find({ groups: { $in: [req.params.id] } })
+
+            console.log(findUser)
+
             const deleted_group = await Group.findByIdAndDelete(req.params.id)
 
-            console.log(deleted_group);
-            // je supprime les informations dans mon user 
-            const user = await User.findById(req.user.id);
+            findUser.forEach(async (user) => {
+                const infoUser = await User.findById(user._id);
+                infoUser.is_admin = false;
+                infoUser.set('groups', undefined); // ou null
+                infoUser.markModified('groups');
+                await infoUser.save()
+            })
 
-            user.is_admin = false;
-
-            user.set('groups', undefined); // ou null
-            user.markModified('groups');
+            // // je supprime le document du groupe
 
 
-            console.log(user)
-            await user.save()
+            // console.log(deleted_group);
+            // // je supprime les informations dans mon user 
 
-            // et je renvois un json contenant des info pou faire un fetch !! 
+
+
+
+
+
+            // console.log(user)
+
+
+            // // et je renvois un json contenant des info pou faire un fetch !! 
             return res.status(201).json({ status: "deleted", valid: true, el_deleted: deleted_group });
         }
 
