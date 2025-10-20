@@ -56,18 +56,25 @@ const router = express.Router();
 router.get("/", verifyToken, async (req, res) => {
 
     try {
+        let isAdmin = false;
         // ici le populate prend en compte la clé groups dans le schema User et non le schema Group
         const infoGroup = await User.findById(req.user.id).populate("groups");
 
         if (infoGroup.groups) {
+            if (req.user.id == infoGroup.groups.id_admin) {
+                isAdmin = true;
+            } 
+
+
+
             // recuperation des users
             const usersGroup = await User.find({ groups: infoGroup.groups._id });
 
             // filtrage afin de ne pas se renvoyer soit meme.
             const otherUser = usersGroup.filter(user => req.user.id != user._id);
 
-            // resolution avec 
-            res.json({ infoGroupe: infoGroup, user_in_group: otherUser });
+            // resolution avec envois des groups, des user et du isAdmin
+            res.json({ infoGroupe: infoGroup, user_in_group: otherUser, isAdmin: isAdmin });
         };
 
         // Ici je récupere toute les données des users, à termes, n'envoyer que les champs nécessaire
@@ -177,21 +184,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
                 await infoUser.save()
             })
 
-            // // je supprime le document du groupe
-
-
-            // console.log(deleted_group);
-            // // je supprime les informations dans mon user 
-
-
-
-
-
-
-            // console.log(user)
-
-
-            // // et je renvois un json contenant des info pou faire un fetch !! 
+            // et je renvois un json contenant des info pou faire un fetch !! 
             return res.status(201).json({ status: "deleted", valid: true, el_deleted: deleted_group });
         }
 
@@ -204,6 +197,23 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 });
 
+router.delete("/member/:id", verifyToken, async (req, res) => {
+
+    const user = await User.findOne({ username: req.params.id }).populate("groups")
+
+
+    if (!(user.groups.id_admin == req.user.id)) {
+        return res.status(403).json({ message: "Vous n’avez pas les droits pour effectuer cette action" })
+    };
+
+
+    user.set('groups', undefined);
+    user.markModified('groups');
+    user.save()
+
+    res.status(200).json({ message: `L'utilisateur ${req.params.id} à bien été supprimé` })
+
+})
 
 router.put("/:id", verifyToken, async (req, res) => {
     // recuperation de l'id du groupe

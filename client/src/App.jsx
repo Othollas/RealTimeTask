@@ -87,7 +87,10 @@ function App() {
 
   // useEffect afin de modifier ou non le groupe
   useEffect(() => {
-    userHasGroup();
+    if(user){
+      userHasGroup();
+    }
+    
   }, [user])
 
   // --------------------------

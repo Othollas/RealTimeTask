@@ -44,7 +44,7 @@ const categorieSchema = new mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // si tu as une collection User
+    ref: "Group-test", // si tu as une collection User
     default: null
   },
   created_at: {
